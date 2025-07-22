@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Serviciul pentru Produse
+  products-service:
+    build: ./products-service
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./products-service/app:/code/app
+    environment:
+      - DATABASE_URL=postgresql://user:password@products_db/products_db
+    depends_on:
+      products_db:
+        condition: service_healthy # <-- MODIFICARE AICI
+
+  # Baza de date pentru Produse
+  products_db:
+    image: postgres:14-alpine
+    volumes:
+      - products_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=products_db
+    healthcheck:
+      # <-- SECTIUNE NOUA
+      test: [ "CMD-SHELL", "pg_isready -U user -d products_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Serviciul pentru Utilizatori
+  user-service:
+    build: ./user-service
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./user-service/app:/code/app
+    environment:
+      - DATABASE_URL=postgresql://user:password@user_db/user_db
+      - SECRET_KEY=cheia_ta_secreta_aici
+      - ALGORITHM=HS256
+    depends_on:
+      user_db:
+        condition: service_healthy # <-- MODIFICARE AICI
+
+  # Baza de date pentru Utilizatori
+  user_db:
+    image: postgres:14-alpine
+    volumes:
+      - user_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=user_db
+    healthcheck:
+      # <-- SECTIUNE NOUA
+      test: [ "CMD-SHELL", "pg_isready -U user -d user_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# Definirea volumelor
+volumes:
+  products_data:
+  user_data:
