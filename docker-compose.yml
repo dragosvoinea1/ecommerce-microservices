@@ -10,9 +10,12 @@ services:
       - ./products-service/app:/code/app
     environment:
       - DATABASE_URL=postgresql://user:password@products_db/products_db
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq
     depends_on:
       products_db:
         condition: service_healthy # <-- MODIFICARE AICI
+      rabbitmq:
+        condition: service_healthy # <-- Asiguram ca RabbitMQ este sanatos
 
   # Baza de date pentru Produse
   products_db:
@@ -74,13 +77,14 @@ services:
       - PRODUCTS_SERVICE_URL=http://products-service:8000
       - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@# # <-- Adaugă asta
       - ALGORITHM=HS256 # <-- Și asta
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq
     depends_on:
       orders_db:
         condition: service_healthy
       products-service:
-        # Ne asiguram ca si products-service ruleaza
         condition: service_started
-
+      rabbitmq:
+        condition: service_healthy # <-- Asiguram ca RabbitMQ este sanatos
   # NOUA BAZA DE DATE PENTRU COMENZI
   orders_db:
     image: postgres:14-alpine
@@ -93,6 +97,18 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U user -d orders_db" ]
       interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # NOUL SERVICIU PENTRU MESSAGE BROKER
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5672:5672" # Portul pentru comunicarea aplicatiilor
+      - "15672:15672" # Portul pentru interfata web de management
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 10s
       timeout: 5s
       retries: 5
 

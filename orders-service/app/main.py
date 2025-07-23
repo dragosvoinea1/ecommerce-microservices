@@ -1,5 +1,7 @@
 import os
 import httpx
+import json
+import pika
 from typing import List
 
 from fastapi import FastAPI, Depends, HTTPException, status, Security
@@ -58,6 +60,9 @@ async def get_current_user_email(token: str = Security(api_key_header_scheme)):
         raise credentials_exception
 
 
+RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
+
+
 # --- Endpoints API ---
 @app.post("/orders",
           response_model=models.Order,
@@ -70,6 +75,7 @@ async def create_order(order_data: models.OrderCreate,
     """
     total_amount = 0
     order_items_to_create = []
+    products_to_update_stock = []
 
     async with httpx.AsyncClient() as client:
         for item in order_data.items:
@@ -96,6 +102,10 @@ async def create_order(order_data: models.OrderCreate,
                     "price_at_purchase":
                     price_at_purchase
                 })
+                products_to_update_stock.append({  # <-- Adăugăm aici
+                    "product_id": item.product_id,
+                    "quantity": item.quantity
+                })
 
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 404:
@@ -120,6 +130,26 @@ async def create_order(order_data: models.OrderCreate,
 
     db.commit()
     db.refresh(new_order)
+
+    try:
+        connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
+        channel = connection.channel()
+        channel.queue_declare(queue='stock_update_queue')
+
+        message_body = json.dumps({
+            "order_id": new_order.id,
+            "products": products_to_update_stock
+        })
+
+        channel.basic_publish(exchange='',
+                              routing_key='stock_update_queue',
+                              body=message_body)
+        connection.close()
+        print(f" [x] Sent stock update message for order {new_order.id}")
+    except Exception as e:
+        # Într-o aplicație reală, am loga eroarea și am avea un mecanism de reîncercare
+        print(f"Error publishing to RabbitMQ: {e}")
+
     return new_order
 
 
