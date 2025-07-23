@@ -39,7 +39,7 @@ services:
       - ./user-service/app:/code/app
     environment:
       - DATABASE_URL=postgresql://user:password@user_db/user_db
-      - SECRET_KEY=cheia_ta_secreta_aici
+      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
       - ALGORITHM=HS256
     depends_on:
       user_db:
@@ -61,7 +61,43 @@ services:
       timeout: 5s
       retries: 5
 
+  # NOUL SERVICIU PENTRU COMENZI
+  orders-service:
+    build: ./orders-service
+    ports:
+      - "8003:8000" # Folosim portul 8003
+    volumes:
+      - ./orders-service/app:/code/app
+    environment:
+      - DATABASE_URL=postgresql://user:password@orders_db/orders_db
+      # Adresa interna a serviciului de produse
+      - PRODUCTS_SERVICE_URL=http://products-service:8000
+      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@# # <-- Adaugă asta
+      - ALGORITHM=HS256 # <-- Și asta
+    depends_on:
+      orders_db:
+        condition: service_healthy
+      products-service:
+        # Ne asiguram ca si products-service ruleaza
+        condition: service_started
+
+  # NOUA BAZA DE DATE PENTRU COMENZI
+  orders_db:
+    image: postgres:14-alpine
+    volumes:
+      - orders_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=orders_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d orders_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 # Definirea volumelor
 volumes:
   products_data:
   user_data:
+  orders_data:
