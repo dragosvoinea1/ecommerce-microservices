@@ -1,14 +1,26 @@
 version: '3.8'
 
 services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - PRODUCTS_SERVICE_URL=http://products-service:8000
+      - USER_SERVICE_URL=http://user-service:8000
+      - ORDERS_SERVICE_URL=http://orders-service:8000
+    depends_on:
+      - products-service
+      - user-service
+      - orders-service
+
   # Serviciul pentru Produse
   products-service:
     build: ./products-service
-    ports:
-      - "8001:8000"
     volumes:
       - ./products-service/app:/code/app
     environment:
+      - ROOT_PATH=/products
       - DATABASE_URL=postgresql://user:password@products_db/products_db
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
     depends_on:
@@ -36,11 +48,10 @@ services:
   # Serviciul pentru Utilizatori
   user-service:
     build: ./user-service
-    ports:
-      - "8002:8000"
     volumes:
       - ./user-service/app:/code/app
     environment:
+      - ROOT_PATH=/users
       - DATABASE_URL=postgresql://user:password@user_db/user_db
       - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
       - ALGORITHM=HS256
@@ -67,11 +78,10 @@ services:
   # NOUL SERVICIU PENTRU COMENZI
   orders-service:
     build: ./orders-service
-    ports:
-      - "8003:8000" # Folosim portul 8003
     volumes:
       - ./orders-service/app:/code/app
     environment:
+      - ROOT_PATH=/orders
       - DATABASE_URL=postgresql://user:password@orders_db/orders_db
       # Adresa interna a serviciului de produse
       - PRODUCTS_SERVICE_URL=http://products-service:8000

@@ -13,7 +13,9 @@ from . import models, db
 
 # --- Configurare ---
 models.Base.metadata.create_all(bind=db.engine)
-app = FastAPI(title="Orders Service")
+
+ROOT_PATH = os.environ.get("ROOT_PATH", "")
+app = FastAPI(title="Orders Service", root_path=ROOT_PATH)
 
 # Adresele celorlalte servicii, citite din variabilele de mediu
 PRODUCTS_SERVICE_URL = os.environ.get("PRODUCTS_SERVICE_URL")
@@ -88,8 +90,7 @@ async def create_order(order_data: models.OrderCreate,
                 if product['stock'] < item.quantity:
                     raise HTTPException(
                         status_code=400,
-                        detail=
-                        f"Stoc insuficient pentru produsul ID {item.product_id}. Stoc disponibil: {product['stock']}"
+                        detail=f"Stoc insuficient pentru produsul ID {item.product_id}. Stoc disponibil: {product['stock']}"
                     )
 
                 price_at_purchase = product['price']
@@ -111,8 +112,7 @@ async def create_order(order_data: models.OrderCreate,
                 if e.response.status_code == 404:
                     raise HTTPException(
                         status_code=404,
-                        detail=
-                        f"Produsul cu ID {item.product_id} nu a fost găsit.")
+                        detail=f"Produsul cu ID {item.product_id} nu a fost găsit.")
                 else:
                     raise HTTPException(
                         status_code=503,

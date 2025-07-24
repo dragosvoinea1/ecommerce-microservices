@@ -3,11 +3,13 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from . import models, db, security
 from jose import JWTError, jwt
+import os
 
 # Creeaza tabelul 'users' la pornire
 models.Base.metadata.create_all(bind=db.engine)
 
-app = FastAPI(title="Users Service")
+ROOT_PATH = os.environ.get("ROOT_PATH", "")
+app = FastAPI(title="Users Service", root_path=ROOT_PATH)
 
 # --- NOU: Schema de securitate pentru a citi token-ul din header ---
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")

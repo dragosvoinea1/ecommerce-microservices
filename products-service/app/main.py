@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+import os
 
 from . import models, db
 
@@ -8,7 +9,8 @@ from . import models, db
 # (doar daca nu exista deja)
 models.Base.metadata.create_all(bind=db.engine)
 
-app = FastAPI(title="Products Service")
+ROOT_PATH = os.environ.get("ROOT_PATH", "")
+app = FastAPI(title="Products Service", root_path=ROOT_PATH)
 
 
 # Functie pentru a obtine o sesiune de baza de date (Dependency Injection)
