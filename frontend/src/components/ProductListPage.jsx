@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react'; 
+import { CartContext } from '../context/CartContext';
 
 export default function ProductListPage() {
   const [products, setProducts] = useState([]);
+  const { addToCart } = useContext(CartContext);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -27,6 +29,13 @@ export default function ProductListPage() {
           {products.map((product) => (
             <li key={product.id}>
               {product.name} - {product.price} RON
+              {/* --- NOU: Butonul "Adaugă în Coș" --- */}
+              <button 
+                onClick={() => addToCart(product)} 
+                style={{ marginLeft: '10px' }}
+              >
+                Adaugă în Coș
+              </button>
             </li>
           ))}
         </ul>
