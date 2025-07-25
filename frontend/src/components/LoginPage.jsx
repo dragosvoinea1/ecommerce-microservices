@@ -1,25 +1,27 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react'; // Importă useContext
+import { useNavigate } from 'react-router-dom'; // Importă useNavigate
+import { AuthContext } from '../context/AuthContext'; // Importă contextul
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  
+  const { login } = useContext(AuthContext); // <-- Folosește funcția login din context
+  const navigate = useNavigate(); // <-- Hook pentru navigare
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
 
-    // Construim datele de formular
     const formData = new URLSearchParams();
-    formData.append('username', email); // API-ul se așteaptă la 'username'
+    formData.append('username', email);
     formData.append('password', password);
 
     try {
       const response = await fetch('http://localhost:8000/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: formData,
       });
 
@@ -28,14 +30,8 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
-
-      // Salvăm token-ul în browser
-      localStorage.setItem('accessToken', data.access_token);
-
-      alert('Te-ai logat cu succes!');
-      // Aici vom redirecționa utilizatorul, de exemplu, la pagina principală
-      window.location.href = '/';
-
+      login(data.access_token); // <-- Cheamă funcția de login din context
+      navigate('/'); // <-- Redirecționează la pagina principală
     } catch (err) {
       setError(err.message);
     }
