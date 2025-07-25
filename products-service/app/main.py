@@ -22,7 +22,7 @@ def get_db():
         database.close()
 
 
-@app.post("/products", response_model=models.Product, status_code=201)
+@app.post("", response_model=models.Product, status_code=201)
 def create_product(product_data: models.ProductCreate,
                    database: Session = Depends(get_db)):
     """Creeaza un produs nou in baza de date."""
@@ -33,14 +33,14 @@ def create_product(product_data: models.ProductCreate,
     return new_product
 
 
-@app.get("/products", response_model=List[models.Product])
+@app.get("", response_model=List[models.Product])
 def get_all_products(database: Session = Depends(get_db)):
     """Returneaza o lista cu toate produsele din baza de date."""
     all_products = database.query(models.DBProduct).all()
     return all_products
 
 
-@app.get("/products/{product_id}", response_model=models.Product)
+@app.get("/{product_id}", response_model=models.Product)
 def get_product_by_id(product_id: int, database: Session = Depends(get_db)):
     """Gaseste un produs dupa ID in baza de date."""
     product = database.query(

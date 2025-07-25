@@ -88,7 +88,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
 
 
 # --- NOU: Endpoint-ul protejat ---
-@app.get("/users/me", response_model=models.User)
+@app.get("/me", response_model=models.User)
 async def read_users_me(current_user: models.User = Depends(get_current_user)):
     """
     Returneaza datele utilizatorului autentificat.

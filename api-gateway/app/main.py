@@ -1,8 +1,17 @@
 import os
 import httpx
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="API Gateway")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite toate originile (pentru dezvoltare)
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite toate metodele (GET, POST, etc.)
+    allow_headers=["*"],  # Permite toate headerele
+)
 
 PRODUCTS_SERVICE_URL = os.environ.get("PRODUCTS_SERVICE_URL")
 USER_SERVICE_URL = os.environ.get("USER_SERVICE_URL")

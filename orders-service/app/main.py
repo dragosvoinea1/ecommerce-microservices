@@ -66,7 +66,7 @@ RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
 
 
 # --- Endpoints API ---
-@app.post("/orders",
+@app.post("",
           response_model=models.Order,
           status_code=status.HTTP_201_CREATED)
 async def create_order(order_data: models.OrderCreate,
@@ -153,7 +153,7 @@ async def create_order(order_data: models.OrderCreate,
     return new_order
 
 
-@app.get("/orders", response_model=List[models.Order])
+@app.get("", response_model=List[models.Order])
 async def get_user_orders(db: Session = Depends(get_db),
                           owner_email: str = Depends(get_current_user_email)):
     """Returnează istoricul de comenzi pentru utilizatorul autentificat."""
