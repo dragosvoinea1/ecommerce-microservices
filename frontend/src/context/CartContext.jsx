@@ -7,23 +7,25 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (product) => {
     setItems((prevItems) => {
-      // Verificăm dacă produsul este deja în coș
       const existingItem = prevItems.find((item) => item.id === product.id);
 
       if (existingItem) {
-        // Dacă există, doar incrementăm cantitatea
         return prevItems.map((item) =>
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
-        // Dacă nu există, îl adăugăm cu cantitatea 1
         return [...prevItems, { ...product, quantity: 1 }];
       }
     });
   };
 
+   const clearCart = () => {
+    setItems([]);
+  };
+
+
   return (
-    <CartContext.Provider value={{ items, addToCart }}>
+    <CartContext.Provider value={{ items, addToCart, clearCart }}>
       {children}
     </CartContext.Provider>
   );

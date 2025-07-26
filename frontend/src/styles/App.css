@@ -2,3 +2,7 @@ main {
   padding: 2rem;
   text-align: center;
 }
+.product-list {
+  list-style-type: none; /* Elimină punctul (bullet point) */
+  padding: 0; /* Elimină spațierea din stânga listei */
+}

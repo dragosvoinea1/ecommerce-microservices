@@ -160,3 +160,29 @@ async def get_user_orders(db: Session = Depends(get_db),
     orders = db.query(models.DBOrder).filter(
         models.DBOrder.owner_email == owner_email).all()
     return orders
+
+@app.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    owner_email: str = Depends(get_current_user_email)
+):
+    """
+    Șterge o comandă specifică.
+    Doar proprietarul comenzii o poate șterge.
+    """
+    order_to_delete = db.query(models.DBOrder).filter(models.DBOrder.id == order_id).first()
+
+    # Verificăm dacă comanda există
+    if not order_to_delete:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comanda nu a fost găsită.")
+
+    # Verificăm dacă utilizatorul curent este proprietarul comenzii
+    if order_to_delete.owner_email != owner_email:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Nu ai permisiunea să ștergi această comandă.")
+
+    # Ștergem comanda (și item-urile asociate vor fi șterse automat datorită relației din DB)
+    db.delete(order_to_delete)
+    db.commit()
+
+    return

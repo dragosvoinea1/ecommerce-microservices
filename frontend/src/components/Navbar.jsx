@@ -14,12 +14,10 @@ export default function Navbar() {
         <Link to="/">Magazinul Meu</Link>
       </div>
       <div className="navbar-links">
-        {/* --- NOU: Afișăm numărul de iteme din coș --- */}
         <Link to="/cart">Coș ({items.length})</Link>
-
         {token ? (
           <>
-            {/* Aici vom adăuga link-ul către 'Comenzile Mele' */}
+            <Link to="/my-orders">Comenzile Mele</Link>
             <button onClick={logout}>Logout</button>
           </>
         ) : (

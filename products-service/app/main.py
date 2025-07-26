@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 import os
 
@@ -22,29 +22,42 @@ def get_db():
         database.close()
 
 
+@app.post("/categories", response_model=models.Category, status_code=201)
+def create_category(category_data: models.CategoryCreate, db: Session = Depends(get_db)):
+    """Creează o categorie nouă."""
+    new_category = models.DBCategory(**category_data.dict())
+    db.add(new_category)
+    db.commit()
+    db.refresh(new_category)
+    return new_category
+
+@app.get("/categories", response_model=List[models.Category])
+def get_all_categories(db: Session = Depends(get_db)):
+    """Returnează o listă cu toate categoriile."""
+    return db.query(models.DBCategory).all()
+
+
 @app.post("", response_model=models.Product, status_code=201)
 def create_product(product_data: models.ProductCreate,
-                   database: Session = Depends(get_db)):
+                   db: Session = Depends(get_db)):
     """Creeaza un produs nou in baza de date."""
     new_product = models.DBProduct(**product_data.dict())
-    database.add(new_product)
-    database.commit()
-    database.refresh(new_product)
+    db.add(new_product)
+    db.commit()
+    db.refresh(new_product)
     return new_product
 
 
 @app.get("", response_model=List[models.Product])
-def get_all_products(database: Session = Depends(get_db)):
+def get_all_products(db: Session = Depends(get_db)):
     """Returneaza o lista cu toate produsele din baza de date."""
-    all_products = database.query(models.DBProduct).all()
-    return all_products
+    return db.query(models.DBProduct).options(joinedload(models.DBProduct.category)).all()
 
 
 @app.get("/{product_id}", response_model=models.Product)
-def get_product_by_id(product_id: int, database: Session = Depends(get_db)):
+def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
     """Gaseste un produs dupa ID in baza de date."""
-    product = database.query(
-        models.DBProduct).filter(models.DBProduct.id == product_id).first()
+    product = db.query(models.DBProduct).options(joinedload(models.DBProduct.category)).filter(models.DBProduct.id == product_id).first()
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
