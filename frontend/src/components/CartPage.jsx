@@ -3,11 +3,15 @@ import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
+import Modal from './Modal'; // <-- Importăm Modal
+import { useConfirmationModal } from '../hooks/useConfirmationModal'; // <-- Importăm hook-ul
 
 export default function CartPage() {
-  const { items, clearCart } = useContext(CartContext);
+  const { items, clearCart, removeFromCart } = useContext(CartContext);
   const { token } = useContext(AuthContext); // Preluăm token-ul de autentificare
   const navigate = useNavigate();
+
+  const { isModalOpen, modalData, openModal, closeModal } = useConfirmationModal();
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -50,6 +54,13 @@ export default function CartPage() {
     }
   };
 
+  const confirmRemove = () => {
+    if (modalData) {
+      removeFromCart(modalData.id); // Ștergem produsul folosind ID-ul salvat
+    }
+    closeModal();
+  };
+
   return (
     <div>
       <h2>Coșul tău de cumpărături</h2>
@@ -61,7 +72,15 @@ export default function CartPage() {
             {items.map((item) => (
               <li key={item.id}>
                 {item.name} - {item.quantity} buc. x {item.price} RON
+                {/* --- NOU: Butonul de ștergere --- */}
+                <button
+                  onClick={() => openModal(item)}
+                  style={{ marginLeft: '10px', backgroundColor: '#dc3545' }}
+                >
+                  Șterge
+                </button>
               </li>
+              
             ))}
           </ul>
           <hr />
@@ -69,6 +88,14 @@ export default function CartPage() {
           <button onClick={handlePlaceOrder}>Plasează Comanda</button>
         </>
       )}
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <h3>Confirmare Ștergere</h3>
+        <p>Ești sigur că vrei să ștergi produsul "{modalData?.name}" din coș?</p>
+        <div className="modal-actions">
+          <button onClick={confirmRemove} className="confirm-btn">Confirmă</button>
+          <button onClick={closeModal} className="cancel-btn">Anulează</button>
+        </div>
+      </Modal>
     </div>
   );
 }

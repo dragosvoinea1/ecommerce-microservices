@@ -57,7 +57,18 @@ def get_all_products(db: Session = Depends(get_db)):
 @app.get("/{product_id}", response_model=models.Product)
 def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
     """Gaseste un produs dupa ID in baza de date."""
-    product = db.query(models.DBProduct).options(joinedload(models.DBProduct.category)).filter(models.DBProduct.id == product_id).first()
+    product = db.query(models.DBProduct).options(
+        joinedload(models.DBProduct.category)).filter(
+            models.DBProduct.id == product_id).first()
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
+
+@app.get("/category/{category_id}", response_model=List[models.Product])
+def get_products_by_category(category_id: int, db: Session = Depends(get_db)):
+    """Returnează o listă cu produsele dintr-o anumită categorie."""
+    products = db.query(models.DBProduct).options(joinedload(models.DBProduct.category)).filter(models.DBProduct.category_id == category_id).all()
+    if not products:
+        # Chiar dacă nu există produse, o listă goală este un răspuns valid
+        return []
+    return products

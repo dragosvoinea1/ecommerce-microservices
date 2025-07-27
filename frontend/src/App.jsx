@@ -5,6 +5,8 @@ import RegisterPage from './components/RegisterPage';
 import CartPage from './components/CartPage';
 import OrderHistoryPage from './components/OrderHistoryPage'; // Asigură-te că este importată
 import Navbar from './components/Navbar';
+import CategoriesPage from './components/CategoriesPage';
+import ProductsByCategoryPage from './components/ProductsByCategoryPage';
 import './styles/App.css';
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<ProductListPage />} />
+          <Route path="/categories" element={<CategoriesPage />} /> {/* Rută nouă */}
+          <Route path="/categories/:categoryId" element={<ProductsByCategoryPage />} /> {/* Rută dinamică nouă */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/cart" element={<CartPage />} />

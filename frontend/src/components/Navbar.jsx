@@ -12,9 +12,11 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-brand">
         <Link to="/">Magazinul Meu</Link>
+        <Link to="/categories">Categorii</Link> {/* <-- Link nou */}
       </div>
       <div className="navbar-links">
         <Link to="/cart">Coș ({items.length})</Link>
+        
         {token ? (
           <>
             <Link to="/my-orders">Comenzile Mele</Link>
