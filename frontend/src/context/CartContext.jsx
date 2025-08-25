@@ -22,16 +22,21 @@ export const CartProvider = ({ children }) => {
     }
   }, [items]); 
 
-  const addToCart = (product) => {
+  const addToCart = (product, quantity = 1) => { // <-- Am adăugat parametrul 'quantity'
     setItems((prevItems) => {
+      // Verificăm dacă produsul este deja în coș
       const existingItem = prevItems.find((item) => item.id === product.id);
 
       if (existingItem) {
+        // Dacă există, adunăm noua cantitate la cea existentă
         return prevItems.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + quantity } // <-- Folosim noua cantitate
+            : item
         );
       } else {
-        return [...prevItems, { ...product, quantity: 1 }];
+        // Dacă nu există, îl adăugăm cu cantitatea specificată
+        return [...prevItems, { ...product, quantity }]; // <-- Folosim noua cantitate
       }
     });
   };

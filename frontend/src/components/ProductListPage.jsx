@@ -1,13 +1,12 @@
-import { useState, useEffect, useContext } from 'react';
-import { CartContext } from '../context/CartContext';
+import { useState, useEffect } from 'react';
+import ProductCard from './ProductCard'; // <-- Importăm componenta principală
 
 export default function ProductListPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null); // Starea pentru categoria selectată
-  const { addToCart } = useContext(CartContext);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // 1. Încarcă lista de categorii o singură dată
+  // Încarcă categoriile
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -22,7 +21,7 @@ export default function ProductListPage() {
     fetchCategories();
   }, []);
 
-  // 2. Încarcă TOATE produsele o singură dată
+  // Încarcă produsele
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -37,7 +36,7 @@ export default function ProductListPage() {
     fetchProducts();
   }, []);
 
-  // 3. Filtrează produsele pe baza categoriei selectate (direct în frontend)
+  // Filtrează produsele
   const filteredProducts = selectedCategory
     ? products.filter(p => p.category.id === selectedCategory)
     : products;
@@ -46,7 +45,6 @@ export default function ProductListPage() {
     <div>
       <h2>Produse Disponibile:</h2>
       
-      {/* 4. Afișează butoanele de filtrare pe categorii */}
       <div>
         <button onClick={() => setSelectedCategory(null)}>Toate Categoriile</button>
         {categories.map(category => (
@@ -57,21 +55,14 @@ export default function ProductListPage() {
       </div>
       <hr/>
 
-      {/* 5. Afișează produsele filtrate */}
-      {filteredProducts.length > 0 ? (
-        <ul className="product-list">
-          {filteredProducts.map((product) => (
-            <li key={product.id}>
-              {product.name} - {product.price} RON (Categorie: {product.category.name})
-              <button onClick={() => addToCart(product)} style={{ marginLeft: '10px' }}>
-                Adaugă în Coș
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>Nu sunt produse în această categorie sau se încarcă...</p>
-      )}
+      {/* --- AICI ESTE MODIFICAREA PRINCIPALĂ --- */}
+      {/* Am înlocuit <ul> cu <div className="product-grid"> */}
+      {/* Și <li> cu componenta <ProductCard /> */}
+      <div className="product-grid">
+        {filteredProducts.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
     </div>
   );
 }

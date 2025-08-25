@@ -37,11 +37,20 @@ def get_all_categories(db: Session = Depends(get_db)):
     return db.query(models.DBCategory).all()
 
 
-@app.post("", response_model=models.Product, status_code=201)
-def create_product(product_data: models.ProductCreate,
-                   db: Session = Depends(get_db)):
-    """Creeaza un produs nou in baza de date."""
-    new_product = models.DBProduct(**product_data.dict())
+@app.post("/", response_model=models.Product, status_code=201)
+def create_product(product_data: models.ProductCreate, db: Session = Depends(get_db)):
+    """Creează un produs nou și îl asociază cu o categorie."""
+    
+    # Creăm obiectul pentru baza de date setând explicit fiecare câmp
+    new_product = models.DBProduct(
+        name=product_data.name,
+        description=product_data.description,
+        price=product_data.price,
+        stock=product_data.stock,
+        image_url=product_data.image_url, # <-- Setăm explicit image_url
+        category_id=product_data.category_id
+    )
+    
     db.add(new_product)
     db.commit()
     db.refresh(new_product)

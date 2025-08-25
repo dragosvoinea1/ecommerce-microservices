@@ -6,3 +6,9 @@ main {
   list-style-type: none; /* Elimină punctul (bullet point) */
   padding: 0; /* Elimină spațierea din stânga listei */
 }
+
+.product-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
