@@ -10,9 +10,12 @@ services:
       - USER_SERVICE_URL=http://user-service:8000
       - ORDERS_SERVICE_URL=http://orders-service:8000
     depends_on:
-      - products-service
-      - user-service
-      - orders-service
+      products-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      orders-service:
+        condition: service_started
 
   # Serviciul pentru Produse
   products-service:
@@ -23,6 +26,8 @@ services:
       - ROOT_PATH=/products
       - DATABASE_URL=postgresql://user:password@products_db/products_db
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
+      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@# 
+      - ALGORITHM=HS256 
     depends_on:
       products_db:
         condition: service_healthy # <-- MODIFICARE AICI

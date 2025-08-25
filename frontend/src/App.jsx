@@ -7,6 +7,8 @@ import OrderHistoryPage from './components/OrderHistoryPage'; // Asigură-te că
 import Navbar from './components/Navbar';
 import CategoriesPage from './components/CategoriesPage';
 import ProductsByCategoryPage from './components/ProductsByCategoryPage';
+import AdminDashboardPage from './components/AdminDashboardPage';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 import './styles/App.css';
 
 function App() {
@@ -23,6 +25,14 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/my-orders" element={<OrderHistoryPage />} /> {/* <-- Adaugă această linie */}
+          <Route 
+            path="/admin" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboardPage />
+              </AdminProtectedRoute>
+            } 
+          />
         </Routes>
       </main>
     </BrowserRouter>

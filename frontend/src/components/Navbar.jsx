@@ -5,7 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext'; // <-- Am importat contextul coșului
 
 export default function Navbar() {
-  const { token, logout } = useContext(AuthContext);
+  const { token, user, logout } = useContext(AuthContext);
   const { items } = useContext(CartContext); // <-- Preluăm produsele din coș
 
   return (
@@ -20,6 +20,9 @@ export default function Navbar() {
         {token ? (
           <>
             <Link to="/my-orders">Comenzile Mele</Link>
+              {user && user.role === 'admin' && (
+              <Link to="/admin">Admin</Link>
+            )}
             <button onClick={logout}>Logout</button>
           </>
         ) : (

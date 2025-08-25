@@ -4,6 +4,7 @@ from typing import List
 import os
 
 from . import models, db
+from .dependencies import get_current_admin_user
 
 # Creeaza tabelele in baza de date la pornirea aplicatiei
 # (doar daca nu exista deja)
@@ -23,7 +24,11 @@ def get_db():
 
 
 @app.post("/categories", response_model=models.Category, status_code=201)
-def create_category(category_data: models.CategoryCreate, db: Session = Depends(get_db)):
+def create_category(
+    category_data: models.CategoryCreate, 
+    db: Session = Depends(get_db),
+    admin_user: dict = Depends(get_current_admin_user) 
+):
     """Creează o categorie nouă."""
     new_category = models.DBCategory(**category_data.dict())
     db.add(new_category)
@@ -38,19 +43,15 @@ def get_all_categories(db: Session = Depends(get_db)):
 
 
 @app.post("/", response_model=models.Product, status_code=201)
-def create_product(product_data: models.ProductCreate, db: Session = Depends(get_db)):
+def create_product(
+    product_data: models.ProductCreate, 
+    db: Session = Depends(get_db),
+    admin_user: dict = Depends(get_current_admin_user) # <-- Adaugă protecția
+):
     """Creează un produs nou și îl asociază cu o categorie."""
     
     # Creăm obiectul pentru baza de date setând explicit fiecare câmp
-    new_product = models.DBProduct(
-        name=product_data.name,
-        description=product_data.description,
-        price=product_data.price,
-        stock=product_data.stock,
-        image_url=product_data.image_url, # <-- Setăm explicit image_url
-        category_id=product_data.category_id
-    )
-    
+    new_product = models.DBProduct(**product_data.dict())
     db.add(new_product)
     db.commit()
     db.refresh(new_product)

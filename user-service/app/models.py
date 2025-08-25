@@ -9,7 +9,7 @@ class DBUser(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-
+    role = Column(String, default = "user")
 
 # Modele Pydantic (datele din API)
 class UserCreate(BaseModel):
@@ -20,6 +20,7 @@ class UserCreate(BaseModel):
 class User(BaseModel):
     id: int
     email: EmailStr
+    role: str
 
     class Config:
         from_attributes = True

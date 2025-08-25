@@ -71,19 +71,19 @@ def register_user(user_data: models.UserCreate,
 
 
 @app.post("/login")
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
-                           database: Session = Depends(get_db)):
-    """Autentifica un utilizator si returneaza un token."""
-    user = database.query(models.DBUser).filter(
-        models.DBUser.email == form_data.username).first()
-    if not user or not security.verify_password(form_data.password,
-                                                user.hashed_password):
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), database: Session = Depends(get_db)):
+    user = database.query(models.DBUser).filter(models.DBUser.email == form_data.username).first()
+    if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = security.create_access_token(data={"sub": user.email})
+    
+    # --- MODIFICARE AICI: Adăugăm și rolul în token ---
+    token_data = {"sub": user.email, "role": user.role}
+    access_token = security.create_access_token(data=token_data)
+    
     return {"access_token": access_token, "token_type": "bearer"}
 
 
