@@ -131,3 +131,21 @@ body {
     margin-top: 10px;
     text-align: center;
 }
+
+.form-group {
+  margin-bottom: 15px;
+  text-align: left; /* Aliniază etichetele la stânga */
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #b0b0b0;
+}
+
+/* Facem input-urile să ocupe toată lățimea disponibilă */
+.form-group .admin-input {
+  width: 100%;
+  box-sizing: border-box; /* Asigură că padding-ul este inclus în lățime */
+}

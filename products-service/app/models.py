@@ -28,12 +28,23 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     category_id: int
 
-class Product(ProductBase): # Moștenește 'image_url' de la ProductBase
+
+class Product(ProductBase):  # Moștenește 'image_url' de la ProductBase
     id: int
     category: Category
 
     class Config:
         from_attributes = True
+
+# Adaugă această clasă în products-service/app/models.py, alături de celelalte modele Pydantic
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    stock: Optional[int] = None
+    image_url: Optional[str] = None
+    category_id: Optional[int] = None
 
 # --- Modele SQLAlchemy (Baza de Date) ---
 
@@ -43,6 +54,7 @@ class DBCategory(Base):
     name = Column(String, unique=True, index=True)
     products = relationship("DBProduct", back_populates="category")
 
+
 class DBProduct(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True, index=True)
@@ -50,6 +62,6 @@ class DBProduct(Base):
     description = Column(String, nullable=True)
     price = Column(Float)
     stock = Column(Integer)
-    image_url = Column(String, nullable=True) # Asigurăm că este aici
+    image_url = Column(String, nullable=True)  # Asigurăm că este aici
     category_id = Column(Integer, ForeignKey("categories.id"))
     category = relationship("DBCategory", back_populates="products")

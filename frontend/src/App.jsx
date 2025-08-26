@@ -10,6 +10,8 @@ import ProductsByCategoryPage from './components/ProductsByCategoryPage';
 import AdminDashboardPage from './components/AdminDashboardPage';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
 import ManageCategoriesPage from './components/admin/ManageCategoriesPage';
+import ManageProductsPage from './components/admin/ManageProductsPage';
+import EditProductPage from './components/admin/EditProductPage';
 import './styles/App.css';
 
 function App() {
@@ -26,21 +28,29 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/my-orders" element={<OrderHistoryPage />} /> {/* <-- Adaugă această linie */}
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <AdminProtectedRoute>
                 <AdminDashboardPage />
               </AdminProtectedRoute>
-            } 
+            }
           />
-           <Route 
-            path="/admin/categories" 
+          <Route
+            path="/admin/categories"
             element={
               <AdminProtectedRoute>
                 <ManageCategoriesPage />
               </AdminProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={<AdminProtectedRoute><ManageProductsPage /></AdminProtectedRoute>}
+          />
+          <Route
+            path="/admin/products/edit/:productId"
+            element={<AdminProtectedRoute><EditProductPage /></AdminProtectedRoute>}
           />
         </Routes>
       </main>

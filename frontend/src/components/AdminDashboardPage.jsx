@@ -23,7 +23,9 @@ export default function AdminDashboardPage() {
         <Link to="/admin/categories" style={adminButtonStyles}>
           Gestionează Categorii
         </Link>
-        {/* Aici vom adăuga în viitor un buton pentru "Gestionează Produse" */}
+        <Link to="/admin/products" style={adminButtonStyles}>
+          Gestionează Produse
+        </Link>
       </div>
     </div>
   );
