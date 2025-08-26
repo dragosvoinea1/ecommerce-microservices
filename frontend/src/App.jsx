@@ -9,6 +9,7 @@ import CategoriesPage from './components/CategoriesPage';
 import ProductsByCategoryPage from './components/ProductsByCategoryPage';
 import AdminDashboardPage from './components/AdminDashboardPage';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import ManageCategoriesPage from './components/admin/ManageCategoriesPage';
 import './styles/App.css';
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
             element={
               <AdminProtectedRoute>
                 <AdminDashboardPage />
+              </AdminProtectedRoute>
+            } 
+          />
+           <Route 
+            path="/admin/categories" 
+            element={
+              <AdminProtectedRoute>
+                <ManageCategoriesPage />
               </AdminProtectedRoute>
             } 
           />
