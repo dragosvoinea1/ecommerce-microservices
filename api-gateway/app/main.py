@@ -16,6 +16,7 @@ app.add_middleware(
 PRODUCTS_SERVICE_URL = os.environ.get("PRODUCTS_SERVICE_URL")
 USER_SERVICE_URL = os.environ.get("USER_SERVICE_URL")
 ORDERS_SERVICE_URL = os.environ.get("ORDERS_SERVICE_URL")
+SEARCH_SERVICE_URL = os.environ.get("SEARCH_SERVICE_URL")
 
 client = httpx.AsyncClient()
 
@@ -26,7 +27,7 @@ def read_root():
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def reverse_proxy(request: Request, path: str):
     target_service_url = None
-    
+
     # Logica de rutare simplificată
     first_segment = path.split('/')[0]
 
@@ -36,7 +37,9 @@ async def reverse_proxy(request: Request, path: str):
         target_service_url = USER_SERVICE_URL
     elif first_segment == "orders":
         target_service_url = ORDERS_SERVICE_URL
-    
+    elif path.startswith("search"):
+        target_service_url = SEARCH_SERVICE_URL
+
     if not target_service_url:
         return Response(status_code=404, content="Not Found")
 
@@ -54,6 +57,8 @@ async def reverse_proxy(request: Request, path: str):
             content=body,
             timeout=10.0,
         )
-        return Response(content=r.content, status_code=r.status_code, headers=dict(r.headers))
+        return Response(content=r.content,
+                        status_code=r.status_code,
+                        headers=dict(r.headers))
     except httpx.RequestError as e:
         return Response(status_code=503, content=f"Service unavailable: {e}")

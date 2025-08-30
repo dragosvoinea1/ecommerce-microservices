@@ -26,8 +26,8 @@ services:
       - ROOT_PATH=/products
       - DATABASE_URL=postgresql://user:password@products_db/products_db
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
-      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@# 
-      - ALGORITHM=HS256 
+      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
+      - ALGORITHM=HS256
     depends_on:
       products_db:
         condition: service_healthy # <-- MODIFICARE AICI
@@ -37,7 +37,7 @@ services:
   # Baza de date pentru Produse
   products_db:
     image: postgres:14-alpine
-    ports: 
+    ports:
       - "5432:5432"
     volumes:
       - products_data:/var/lib/postgresql/data/
@@ -69,7 +69,7 @@ services:
   # Baza de date pentru Utilizatori
   user_db:
     image: postgres:14-alpine
-    ports: 
+    ports:
       - "5433:5432"
     volumes:
       - user_data:/var/lib/postgresql/data/
@@ -107,7 +107,7 @@ services:
   # NOUA BAZA DE DATE PENTRU COMENZI
   orders_db:
     image: postgres:14-alpine
-    ports: 
+    ports:
       - "5434:5432"
     volumes:
       - orders_data:/var/lib/postgresql/data/
@@ -133,8 +133,40 @@ services:
       timeout: 5s
       retries: 5
 
+  # --- SERVICII NOI PENTRU CĂUTARE ---
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # Dezactivăm securitatea pentru simplitate în dezvoltare
+    ports:
+      - "9200:9200" # Portul API pentru Elasticsearch
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.9.2
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601" # Portul pentru interfața web Kibana
+    depends_on:
+      - elasticsearch
+
+  search-service:
+    build: ./search-service
+    volumes:
+      - ./search-service/app:/code/app
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq
+      - ELASTICSEARCH_HOST=elasticsearch
+    depends_on:
+      - rabbitmq
+      - elasticsearch
+
 # Definirea volumelor
 volumes:
   products_data:
   user_data:
   orders_data:
+  elastic_data:

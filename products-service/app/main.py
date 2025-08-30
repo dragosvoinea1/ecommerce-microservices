@@ -2,6 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 import os
+import pika
+import json
+
 
 from . import models, db
 from .dependencies import get_current_admin_user
@@ -13,6 +16,29 @@ models.Base.metadata.create_all(bind=db.engine)
 ROOT_PATH = os.environ.get("ROOT_PATH", "")
 app = FastAPI(title="Products Service", root_path=ROOT_PATH)
 
+RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
+
+def publish_product_event(action: str, product: dict):
+    """Publică un eveniment despre un produs în RabbitMQ."""
+    try:
+        connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
+        channel = connection.channel()
+        channel.exchange_declare(exchange='products_exchange', exchange_type='fanout')
+
+        message = {
+            "action": action,
+            "product": product
+        }
+
+        channel.basic_publish(
+            exchange='products_exchange',
+            routing_key='', # Ignorat pentru fanout
+            body=json.dumps(message, default=str) # default=str pentru a serializa date non-standard
+        )
+        print(f" [x] Sent '{action}' event for product {product.get('id')}")
+        connection.close()
+    except Exception as e:
+        print(f" [!] Error publishing product event: {e}")
 
 # Functie pentru a obtine o sesiune de baza de date (Dependency Injection)
 def get_db():
@@ -57,6 +83,8 @@ def create_product(product_data: models.ProductCreate,
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
+    product_dict = {c.name: getattr(new_product, c.name) for c in new_product.__table__.columns}
+    publish_product_event("create", product_dict)   
     return new_product
 
 
@@ -130,6 +158,7 @@ def delete_product(product_id: int,
 
     db.delete(product_to_delete)
     db.commit()
+    publish_product_event("delete", {"id": product_id})
     return
 
 
@@ -154,4 +183,7 @@ def update_product(product_id: int,
     db.add(product_to_update)
     db.commit()
     db.refresh(product_to_update)
+
+    product_dict = {c.name: getattr(product_to_update, c.name) for c in product_to_update.__table__.columns}
+    publish_product_event("update", product_dict)
     return product_to_update

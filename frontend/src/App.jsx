@@ -12,6 +12,7 @@ import AdminProtectedRoute from './components/AdminProtectedRoute';
 import ManageCategoriesPage from './components/admin/ManageCategoriesPage';
 import ManageProductsPage from './components/admin/ManageProductsPage';
 import EditProductPage from './components/admin/EditProductPage';
+import SearchResultsPage from './components/SearchResultsPage';
 import './styles/App.css';
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
             path="/admin/products/edit/:productId"
             element={<AdminProtectedRoute><EditProductPage /></AdminProtectedRoute>}
           />
+           <Route path="/search" element={<SearchResultsPage />} /> {/* <-- Ruta nouă */}
         </Routes>
       </main>
     </BrowserRouter>

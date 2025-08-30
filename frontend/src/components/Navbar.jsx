@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext'; // <-- Am importat contextul coșului
+import SearchBar from './SearchBar';
 
 export default function Navbar() {
   const { token, user, logout } = useContext(AuthContext);
@@ -13,6 +14,9 @@ export default function Navbar() {
       <div className="navbar-brand">
         <Link to="/">Magazinul Meu</Link>
         <Link to="/categories">Categorii</Link> {/* <-- Link nou */}
+      </div>
+      <div className="navbar-center">
+        <SearchBar />
       </div>
       <div className="navbar-links">
         <Link to="/cart">Coș ({items.length})</Link>
