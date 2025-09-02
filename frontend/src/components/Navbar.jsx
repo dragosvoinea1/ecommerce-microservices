@@ -15,9 +15,9 @@ export default function Navbar() {
         <Link to="/">Magazinul Meu</Link>
         <Link to="/categories">Categorii</Link> {/* <-- Link nou */}
       </div>
-      <div className="navbar-center">
+
         <SearchBar />
-      </div>
+        
       <div className="navbar-links">
         <Link to="/cart">Coș ({items.length})</Link>
         

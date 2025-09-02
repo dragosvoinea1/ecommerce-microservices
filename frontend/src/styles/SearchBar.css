@@ -1,3 +1,8 @@
+.search-container {
+  position: relative; /* Containerul trebuie să fie un punct de referință */
+  width: 500px; /* Setează o lățime fixă pentru consistență */
+}
+
 .search-bar {
   display: flex;
 }
@@ -10,6 +15,7 @@
   padding: 8px 12px;
   font-size: 0.9em;
   outline: none;
+  width: 100%; /* Ocupă tot spațiul din container */
 }
 
 .search-button {
@@ -20,4 +26,36 @@
   background-color: #646cff;
   color: white;
   cursor: pointer;
+}
+
+.suggestions-list {
+  position: absolute; /* Cheia: Plutește deasupra conținutului */
+  top: 100%; /* Se poziționează exact sub container */
+  left: 0;
+  right: 0;
+  background-color: #2f2f2f;
+  border: 1px solid #444;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 1000; /* Stă deasupra tuturor celorlalte elemente */
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #444;
+  text-align: left;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background-color: #3a3a3a;
 }

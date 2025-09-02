@@ -46,3 +46,10 @@
   display: flex;
   align-items: center;
 }
+
+.navbar-center {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  position: relative; /* <-- Adaugă această linie */
+}
