@@ -1,51 +1,43 @@
+# search-service/app/consumer.py
 import pika
 import json
 import os
 import time
-from elasticsearch import Elasticsearch
+from .es_client import get_es_client
 
-# Așteptăm puțin pentru ca Elasticsearch să pornească complet
-time.sleep(15)
+def main():
+    print(" [CONSUMER] Starting...")
+    es = get_es_client() # Obține conexiunea
+    if not es: return
 
-print(' [*] Search consumer script started.')
+    # Creează indexul dacă nu există
+    if not es.indices.exists(index="products"):
+        es.indices.create(index="products")
+        print(" [CONSUMER] Created 'products' index.")
 
-# Conexiunea la Elasticsearch
-ES_HOST = os.environ.get("ELASTICSEARCH_HOST")
-es = Elasticsearch([{'host': ES_HOST, 'port': 9200, 'scheme': 'http'}])
+    # Conectare la RabbitMQ
+    connection = pika.BlockingConnection(pika.URLParameters(os.environ.get("RABBITMQ_URL")))
+    channel = connection.channel()
+    channel.queue_declare(queue='product_events_queue', durable=True)
+    print(' [CONSUMER] Waiting for messages.')
 
-# Conexiunea la RabbitMQ
-RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
-connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
-channel = connection.channel()
+    def callback(ch, method, properties, body):
+        print(f" [CONSUMER] Received message: {body.decode()}")
+        data = json.loads(body)
+        action, product = data.get('action'), data.get('product')
+        product_id = product.get('id')
+        try:
+            if action in ['create', 'update']:
+                es.index(index='products', id=product_id, document=product)
+                print(f" [CONSUMER] Product {product_id} indexed.")
+            elif action == 'delete':
+                es.delete(index='products', id=product_id)
+                print(f" [CONSUMER] Product {product_id} deleted.")
+        except Exception as e:
+            print(f" [!] Error processing message: {e}")
 
-# Declarăm exchange-ul (vom folosi un fanout pentru a trimite mesajul la mai mulți consumatori în viitor)
-channel.exchange_declare(exchange='products_exchange', exchange_type='fanout')
+    channel.basic_consume(queue='product_events_queue', on_message_callback=callback, auto_ack=True)
+    channel.start_consuming()
 
-# Creăm o coadă temporară, care va fi ștearsă la ieșire
-result = channel.queue_declare(queue='', exclusive=True)
-queue_name = result.method.queue
-
-# Legăm coada de exchange
-channel.queue_bind(exchange='products_exchange', queue=queue_name)
-
-def callback(ch, method, properties, body):
-    """Procesează mesajele primite."""
-    print(f" [x] Received message: {body.decode()}")
-    data = json.loads(body)
-    action = data.get('action')
-    product = data.get('product')
-
-    try:
-        if action == 'create' or action == 'update':
-            es.index(index='products', id=product['id'], document=product)
-            print(f" [x] Product {product['id']} indexed/updated in Elasticsearch.")
-        elif action == 'delete':
-            es.delete(index='products', id=product['id'])
-            print(f" [x] Product {product['id']} deleted from Elasticsearch.")
-    except Exception as e:
-        print(f" [!] Error processing message: {e}")
-
-channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-
-print(' [*] Waiting for messages. To exit press CTRL+C')
-channel.start_consuming()
+if __name__ == '__main__':
+    main()

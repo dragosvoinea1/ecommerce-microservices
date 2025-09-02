@@ -19,22 +19,23 @@ app = FastAPI(title="Products Service", root_path=ROOT_PATH)
 RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
 
 def publish_product_event(action: str, product: dict):
-    """Publică un eveniment despre un produs în RabbitMQ."""
+    """Publică un eveniment despre un produs într-o coadă directă."""
     try:
         connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
         channel = connection.channel()
-        channel.exchange_declare(exchange='products_exchange', exchange_type='fanout')
-
-        message = {
-            "action": action,
-            "product": product
-        }
-
+        
+        # Declarăm o coadă durabilă cu un nume fix
+        channel.queue_declare(queue='product_events_queue', durable=True)
+        
+        message = { "action": action, "product": product }
+        
         channel.basic_publish(
-            exchange='products_exchange',
-            routing_key='', # Ignorat pentru fanout
-            body=json.dumps(message, default=str) # default=str pentru a serializa date non-standard
-        )
+            exchange='',
+            routing_key='product_events_queue', # Trimitem direct la coadă
+            body=json.dumps(message, default=str),
+            properties=pika.BasicProperties(
+                delivery_mode=2,  # Facem mesajul persistent
+            ))
         print(f" [x] Sent '{action}' event for product {product.get('id')}")
         connection.close()
     except Exception as e:

@@ -1,19 +1,14 @@
-import os
-from fastapi import FastAPI
+# search-service/app/main.py
+from fastapi import FastAPI, Depends
 from elasticsearch import Elasticsearch
+from .es_client import get_es_client
 
 app = FastAPI(title="Search Service")
 
-ES_HOST = os.environ.get("ELASTICSEARCH_HOST")
-es = Elasticsearch([{'host': ES_HOST, 'port': 9200, 'scheme': 'http'}])
-
 @app.get("/search")
-def search_products(q: str):
-    """Caută produse în Elasticsearch."""
-    if not q:
-        return []
-
-    # Construim o interogare avansată (fuzzy search)
+def search_products(q: str, es: Elasticsearch = Depends(get_es_client)):
+    if not q: return []
+    
     query = {
         "query": {
             "multi_match": {
@@ -23,10 +18,9 @@ def search_products(q: str):
             }
         }
     }
-
+    
     try:
         response = es.search(index="products", body=query)
-        # Extragem doar documentele sursă din răspuns
         return [hit['_source'] for hit in response['hits']['hits']]
     except Exception as e:
         return {"error": str(e)}

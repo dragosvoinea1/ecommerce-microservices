@@ -27,8 +27,7 @@ def read_root():
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def reverse_proxy(request: Request, path: str):
     target_service_url = None
-
-    # Logica de rutare simplificată
+    
     first_segment = path.split('/')[0]
 
     if first_segment == "products":
@@ -37,13 +36,15 @@ async def reverse_proxy(request: Request, path: str):
         target_service_url = USER_SERVICE_URL
     elif first_segment == "orders":
         target_service_url = ORDERS_SERVICE_URL
-    elif path.startswith("search"):
+    elif first_segment == "search":
         target_service_url = SEARCH_SERVICE_URL
-
+    
     if not target_service_url:
         return Response(status_code=404, content="Not Found")
 
+    # Am eliminat adăugarea manuală a query_params de aici
     target_url = f"{target_service_url}/{path}"
+        
     headers = dict(request.headers)
     headers["host"] = httpx.URL(target_url).host
     body = await request.body()
@@ -53,7 +54,7 @@ async def reverse_proxy(request: Request, path: str):
             method=request.method,
             url=target_url,
             headers=headers,
-            params=request.query_params,
+            params=request.query_params, # httpx va adăuga parametrii corect
             content=body,
             timeout=10.0,
         )
