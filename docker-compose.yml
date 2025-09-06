@@ -61,7 +61,6 @@ services:
     volumes:
       - ./user-service/app:/code/app
     environment:
-      - ROOT_PATH=/users
       - DATABASE_URL=postgresql://user:password@user_db/user_db
       - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
       - ALGORITHM=HS256

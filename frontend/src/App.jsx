@@ -13,6 +13,7 @@ import ManageCategoriesPage from './components/admin/ManageCategoriesPage';
 import ManageProductsPage from './components/admin/ManageProductsPage';
 import EditProductPage from './components/admin/EditProductPage';
 import SearchResultsPage from './components/SearchResultsPage';
+import ConfirmationPage from './components/ConfirmationPage';
 import './styles/App.css';
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
             element={<AdminProtectedRoute><EditProductPage /></AdminProtectedRoute>}
           />
            <Route path="/search" element={<SearchResultsPage />} /> {/* <-- Ruta nouă */}
+           <Route path="/confirm/:token" element={<ConfirmationPage />} /> {/* <-- Ruta nouă */}
         </Routes>
       </main>
     </BrowserRouter>

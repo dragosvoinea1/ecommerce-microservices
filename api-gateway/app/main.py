@@ -7,10 +7,10 @@ app = FastAPI(title="API Gateway")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite toate originile (pentru dezvoltare)
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Permite toate metodele (GET, POST, etc.)
-    allow_headers=["*"],  # Permite toate headerele
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 PRODUCTS_SERVICE_URL = os.environ.get("PRODUCTS_SERVICE_URL")
@@ -32,7 +32,7 @@ async def reverse_proxy(request: Request, path: str):
 
     if first_segment == "products":
         target_service_url = PRODUCTS_SERVICE_URL
-    elif first_segment in ["users", "login", "register"]:
+    elif first_segment in ["users", "login", "register", "confirm"]:
         target_service_url = USER_SERVICE_URL
     elif first_segment == "orders":
         target_service_url = ORDERS_SERVICE_URL
@@ -42,11 +42,11 @@ async def reverse_proxy(request: Request, path: str):
     if not target_service_url:
         return Response(status_code=404, content="Not Found")
 
-    # Am eliminat adăugarea manuală a query_params de aici
+    # Am eliminat logica `if request.query_params` de aici
     target_url = f"{target_service_url}/{path}"
         
     headers = dict(request.headers)
-    headers["host"] = httpx.URL(target_url).host
+    headers["host"] = httpx.URL(target_service_url).host
     body = await request.body()
 
     try:
@@ -54,7 +54,7 @@ async def reverse_proxy(request: Request, path: str):
             method=request.method,
             url=target_url,
             headers=headers,
-            params=request.query_params, # httpx va adăuga parametrii corect
+            params=request.query_params,
             content=body,
             timeout=10.0,
         )
