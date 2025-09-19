@@ -1,20 +1,25 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import ProductListPage from './components/ProductListPage';
-import LoginPage from './components/LoginPage';
-import RegisterPage from './components/RegisterPage';
-import CartPage from './components/CartPage';
-import OrderHistoryPage from './components/OrderHistoryPage'; // Asigură-te că este importată
-import Navbar from './components/Navbar';
-import CategoriesPage from './components/CategoriesPage';
-import ProductsByCategoryPage from './components/ProductsByCategoryPage';
-import AdminDashboardPage from './components/AdminDashboardPage';
-import AdminProtectedRoute from './components/AdminProtectedRoute';
+import ProductListPage from './components/product/ProductListPage';
+import CategoriesPage from './components/product/CategoriesPage';
+import ProductsByCategoryPage from './components/product/ProductsByCategoryPage';
+import ProductDetailPage from './components/product/ProductDetailPage';
+import SearchResultsPage from './components/product/SearchResultsPage';
+
+import LoginPage from './components/auth/LoginPage';
+import RegisterPage from './components/auth/RegisterPage';
+import ConfirmationPage from './components/auth/ConfirmationPage';
+import AdminProtectedRoute from './components/auth/AdminProtectedRoute';
+
+import CartPage from './components/cart/CartPage';
+import OrderHistoryPage from './components/orders/OrderHistoryPage';
+
+import AdminDashboardPage from './components/admin/AdminDashboardPage';
 import ManageCategoriesPage from './components/admin/ManageCategoriesPage';
 import ManageProductsPage from './components/admin/ManageProductsPage';
 import EditProductPage from './components/admin/EditProductPage';
-import SearchResultsPage from './components/SearchResultsPage';
-import ConfirmationPage from './components/ConfirmationPage';
-import ProductDetailPage from './components/ProductDetailPage';
+
+import Navbar from './components/layout/Navbar';
+
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './styles/App.css';
 
 function App() {

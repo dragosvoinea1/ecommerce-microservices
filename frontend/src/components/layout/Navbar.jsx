@@ -1,9 +1,9 @@
-import '../styles/Navbar.css'; // <-- Importă fișierul CSS
+import '../../styles/Navbar.css'; // <-- Importă fișierul CSS
 import { Link } from 'react-router-dom';
 import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import { CartContext } from '../context/CartContext'; // <-- Am importat contextul coșului
-import SearchBar from './SearchBar';
+import { AuthContext } from '../../context/AuthContext';
+import { CartContext } from '../../context/CartContext'; // <-- Am importat contextul coșului
+import SearchBar from '../product/SearchBar';
 
 export default function Navbar() {
   const { token, user, logout } = useContext(AuthContext);

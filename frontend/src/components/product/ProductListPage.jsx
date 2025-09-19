@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import ProductCard from './ProductCard'; // <-- Importăm componenta principală
+import ProductCard from './ProductCard'; 
 
 export default function ProductListPage() {
   const [products, setProducts] = useState([]);

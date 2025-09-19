@@ -2,6 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import ReviewItem from './ReviewItem'; // Calea este corectă, relativă la folderul curent
 import StarRatingInput from './StarRatingInput';
+import Modal from '../ui/Modal'; 
+import { useConfirmationModal } from '../../hooks/useConfirmationModal';
 import '../../styles/Reviews.css';
 
 
@@ -11,6 +13,8 @@ export default function ReviewsSection({ productId }) {
   const [comment, setComment] = useState('');
   const [error, setError] = useState('');
   const { token, user } = useContext(AuthContext);
+
+  const { isModalOpen, modalData, openModal, closeModal } = useConfirmationModal();
 
   const fetchReviews = async () => {
     try {
@@ -29,13 +33,19 @@ export default function ReviewsSection({ productId }) {
     }
   }, [productId]);
 
-  const handleSubmit = async (e) => {
+  // --- LOGICA PENTRU ADĂUGARE RECENZIE ---
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
     if (!token) {
       setError('Trebuie să fii autentificat pentru a lăsa o recenzie.');
       return;
     }
+    openModal({ type: 'add', data: { product_id: productId, rating, comment } });
+  };
+
+  const confirmAddReview = async () => {
+    const reviewData = modalData.data;
     try {
       const response = await fetch('http://localhost:8000/reviews', {
         method: 'POST',
@@ -43,7 +53,7 @@ export default function ReviewsSection({ productId }) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ product_id: productId, rating, comment }),
+        body: JSON.stringify(reviewData),
       });
       if (!response.ok) {
         const errData = await response.json();
@@ -54,11 +64,18 @@ export default function ReviewsSection({ productId }) {
       fetchReviews();
     } catch (err) {
       setError(err.message);
+    } finally {
+      closeModal();
     }
   };
 
-  const handleDelete = async (reviewId) => {
-    if (!window.confirm('Ești sigur că vrei să ștergi această recenzie?')) return;
+  // --- LOGICA PENTRU ȘTERGERE RECENZIE ---
+  const handleDelete = (reviewId) => {
+    openModal({ type: 'delete', data: { reviewId } });
+  };
+
+  const confirmDeleteReview = async () => {
+    const { reviewId } = modalData.data;
     try {
       const response = await fetch(`http://localhost:8000/reviews/${reviewId}`, {
         method: 'DELETE',
@@ -68,29 +85,40 @@ export default function ReviewsSection({ productId }) {
       fetchReviews();
     } catch (err) {
       alert(err.message);
+    } finally {
+      closeModal();
     }
   };
+
+  const handleConfirm = () => {
+    if (modalData?.type === 'add') {
+      confirmAddReview();
+    } else if (modalData?.type === 'delete') {
+      confirmDeleteReview();
+    }
+  };
+
 
   return (
     <div className="reviews-container">
       <h3>Recenzii Produs</h3>
       {token && (
         <form onSubmit={handleSubmit} className="review-form">
-          <h4>Adaugă recenzia ta</h4>
-          <div className="form-group">
-            <label>Nota:</label>
-            <StarRatingInput rating={rating} setRating={setRating} />
-          </div>
-          <div className="form-group">
-            <label>Comentariu:</label>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Spune-ți părerea despre produs..."
-            />
-          </div>
-          {error && <p className="error-message">{error}</p>}
-          <button type="submit" className="auth-button">Trimite</button>
+            <h4>Adaugă recenzia ta</h4>
+            <div className="form-group">
+                <label>Nota:</label>
+                <StarRatingInput rating={rating} setRating={setRating} />
+            </div>
+            <div className="form-group">
+                <label>Comentariu:</label>
+                <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Spune-ți părerea despre produs..."
+                />
+            </div>
+            {error && <p className="error-message">{error}</p>}
+            <button type="submit" className="auth-button">Trimite</button>
         </form>
       )}
 
@@ -108,6 +136,19 @@ export default function ReviewsSection({ productId }) {
           <p>Acest produs nu are nicio recenzie. Fii primul care adaugă una!</p>
         )}
       </ul>
+
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <h3>Confirmare</h3>
+        <p>
+          {modalData?.type === 'add' 
+            ? 'Ești sigur că vrei să adaugi această recenzie?' 
+            : 'Ești sigur că vrei să ștergi această recenzie?'}
+        </p>
+        <div className="modal-actions">
+          <button onClick={handleConfirm} className="confirm-btn">Confirmă</button>
+          <button onClick={closeModal} className="cancel-btn">Anulează</button>
+        </div>
+      </Modal>
     </div>
   );
 }

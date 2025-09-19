@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react'; // Importă useContext
 import { useNavigate } from 'react-router-dom'; // Importă useNavigate
-import { AuthContext } from '../context/AuthContext'; // Importă contextul
-import '../styles/AuthForm.css';
+import { AuthContext } from '../../context/AuthContext'; // Importă contextul
+import '../../styles/AuthForm.css';
 
 export default function LoginPage() {
    const [email, setEmail] = useState('');

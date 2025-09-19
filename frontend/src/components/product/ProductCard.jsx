@@ -1,9 +1,9 @@
 import { useState, useContext } from 'react';
-import { CartContext } from '../context/CartContext';
-import { useConfirmationModal } from '../hooks/useConfirmationModal';
-import Modal from './Modal';
+import { CartContext } from '../../context/CartContext';
+import { useConfirmationModal } from '../../hooks/useConfirmationModal';
+import Modal from '../ui/Modal';
 import { Link } from 'react-router-dom';
-import '../styles/ProductCard.css';
+import '../../styles/ProductCard.css';
 
 export default function ProductCard({ product }) {
   const [quantity, setQuantity] = useState(1);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import Modal from '../Modal';
+import Modal from '../ui/Modal';
 import { useConfirmationModal } from '../../hooks/useConfirmationModal';
 import { Link } from 'react-router-dom';
 import '../../styles/AdminStyles.css';

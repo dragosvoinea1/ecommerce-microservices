@@ -1,10 +1,10 @@
 // în frontend/src/components/CartPage.jsx
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CartContext } from '../context/CartContext';
-import { AuthContext } from '../context/AuthContext';
-import Modal from './Modal'; // <-- Importăm Modal
-import { useConfirmationModal } from '../hooks/useConfirmationModal'; // <-- Importăm hook-ul
+import { CartContext } from '../../context/CartContext';
+import { AuthContext } from '../../context/AuthContext';
+import Modal from '../ui/Modal'; // <-- Importăm Modal
+import { useConfirmationModal } from '../../hooks/useConfirmationModal'; // <-- Importăm hook-ul
 
 export default function CartPage() {
   const { items, clearCart, removeFromCart } = useContext(CartContext);

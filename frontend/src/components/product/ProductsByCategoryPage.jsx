@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { CartContext } from '../context/CartContext';
-import Modal from './Modal'; // <-- 1. Importăm Modal
-import { useConfirmationModal } from '../hooks/useConfirmationModal'; // <-- 2. Importăm hook-ul
+import { CartContext } from '../../context/CartContext';
+import Modal from '../ui/Modal'; // <-- 1. Importăm Modal
+import { useConfirmationModal } from '../../hooks/useConfirmationModal'; // <-- 2. Importăm hook-ul
 
 export default function ProductsByCategoryPage() {
   const [products, setProducts] = useState([]);

@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/Modal.css'; // Vom crea acest fișier imediat
+import '../../styles/Modal.css'; // Vom crea acest fișier imediat
 
 export default function Modal({ isOpen, onClose, children }) {
   if (!isOpen) {

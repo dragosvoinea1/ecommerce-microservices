@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/AuthForm.css'; // Importăm noul fișier CSS
+import '../../styles/AuthForm.css'; // Importăm noul fișier CSS
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({

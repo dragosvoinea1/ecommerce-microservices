@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import ReviewsSection from './reviews/ReviewSection'; // Importăm secțiunea de recenzii
-import '../styles/ProductDetailPage.css'; // Vom crea acest fișier de stil
+import ReviewsSection from '../reviews/ReviewSection'; // Importăm secțiunea de recenzii
+import '../../styles/ProductDetailPage.css'; // Vom crea acest fișier de stil
 
 export default function ProductDetailPage() {
   const { productId } = useParams();
