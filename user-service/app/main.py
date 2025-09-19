@@ -10,14 +10,16 @@ from datetime import datetime, timedelta
 # Creează tabelul 'users' la pornire
 models.Base.metadata.create_all(bind=db.engine)
 
+ROOT_PATH = os.environ.get("ROOT_PATH", "") 
+
 # Inițializează aplicația principală FĂRĂ root_path
-app = FastAPI(title="Users Service")
+app = FastAPI(title="Users Service", root_path = ROOT_PATH)
 
 # Router pentru rutele de autentificare (FĂRĂ prefix)
 auth_router = APIRouter(tags=["Authentication"])
 
 # Router pentru rutele de utilizator (CU prefix /users)
-users_router = APIRouter(prefix="/users", tags=["Users"])
+users_router = APIRouter(tags=["Users"])
 
 # Definim schema de securitate. tokenUrl este calea relativă la rădăcina aplicației.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -119,4 +121,4 @@ async def read_users_me(current_user: models.User = Depends(get_current_user)):
 
 # Includem ambele routere în aplicația principală
 app.include_router(auth_router)
-app.include_router(users_router)
+app.include_router(users_router, prefix = "/users")

@@ -1,0 +1,38 @@
+.product-detail-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.product-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.product-detail-image {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  flex: 1 1 300px;
+  border-radius: 10px;
+  border: 1px solid #444;
+}
+
+.product-detail-text {
+  flex: 2 1 400px;
+  text-align: left;
+}
+
+.product-detail-price {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #88aaff;
+  margin: 1rem 0;
+}
+
+.product-detail-description {
+  color: #c0c0c0;
+  line-height: 1.6;
+}

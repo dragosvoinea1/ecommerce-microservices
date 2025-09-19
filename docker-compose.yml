@@ -10,6 +10,7 @@ services:
       - USER_SERVICE_URL=http://user-service:8000
       - ORDERS_SERVICE_URL=http://orders-service:8000
       - SEARCH_SERVICE_URL=http://search-service:8000
+      - REVIEWS_SERVICE_URL=http://reviews-service:8000
     depends_on:
       products-service:
         condition: service_started
@@ -18,6 +19,9 @@ services:
       orders-service:
         condition: service_started
       search-service:
+        condition: service_started
+      reviews-service:
+        # <-- SECȚIUNE NOUĂ
         condition: service_started
 
   # Serviciul pentru Produse
@@ -61,6 +65,7 @@ services:
     volumes:
       - ./user-service/app:/code/app
     environment:
+      - ROOT_PATH=/users
       - DATABASE_URL=postgresql://user:password@user_db/user_db
       - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
       - ALGORITHM=HS256
@@ -123,6 +128,37 @@ services:
       timeout: 5s
       retries: 5
 
+  # NOUL SERVICIU PENTRU RECENZII
+  reviews-service:
+    build: ./reviews-service
+    volumes:
+      - ./reviews-service/app:/code/app
+    environment:
+      - ROOT_PATH=/reviews
+      - DATABASE_URL=postgresql://user:password@reviews_db/reviews_db
+      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
+      - ALGORITHM=HS256
+    depends_on:
+      reviews_db:
+        condition: service_healthy
+
+  # NOUA BAZĂ DE DATE PENTRU RECENZII
+  reviews_db:
+    image: postgres:14-alpine
+    ports:
+      - "5435:5432" # Folosim un port nou pentru a nu se suprapune
+    volumes:
+      - reviews_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=reviews_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d reviews_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   # NOUL SERVICIU PENTRU MESSAGE BROKER
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
@@ -169,3 +205,4 @@ volumes:
   user_data:
   orders_data:
   elastic_data:
+  reviews_data:

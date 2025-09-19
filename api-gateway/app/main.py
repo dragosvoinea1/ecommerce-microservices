@@ -17,6 +17,7 @@ PRODUCTS_SERVICE_URL = os.environ.get("PRODUCTS_SERVICE_URL")
 USER_SERVICE_URL = os.environ.get("USER_SERVICE_URL")
 ORDERS_SERVICE_URL = os.environ.get("ORDERS_SERVICE_URL")
 SEARCH_SERVICE_URL = os.environ.get("SEARCH_SERVICE_URL")
+REVIEWS_SERVICE_URL = os.environ.get("REVIEWS_SERVICE_URL")
 
 client = httpx.AsyncClient()
 
@@ -38,6 +39,8 @@ async def reverse_proxy(request: Request, path: str):
         target_service_url = ORDERS_SERVICE_URL
     elif first_segment == "search":
         target_service_url = SEARCH_SERVICE_URL
+    elif first_segment == "reviews": 
+        target_service_url = REVIEWS_SERVICE_URL
     
     if not target_service_url:
         return Response(status_code=404, content="Not Found")

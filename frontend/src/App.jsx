@@ -14,6 +14,7 @@ import ManageProductsPage from './components/admin/ManageProductsPage';
 import EditProductPage from './components/admin/EditProductPage';
 import SearchResultsPage from './components/SearchResultsPage';
 import ConfirmationPage from './components/ConfirmationPage';
+import ProductDetailPage from './components/ProductDetailPage';
 import './styles/App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<ProductListPage />} />
+          <Route path="/products/:productId" element={<ProductDetailPage />} />
           <Route path="/categories" element={<CategoriesPage />} /> {/* Rută nouă */}
           <Route path="/categories/:categoryId" element={<ProductsByCategoryPage />} /> {/* Rută dinamică nouă */}
           <Route path="/login" element={<LoginPage />} />

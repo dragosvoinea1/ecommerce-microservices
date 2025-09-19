@@ -38,3 +38,8 @@
 .add-to-cart-controls input {
   width: 60px;
 }
+
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+}

@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { CartContext } from '../context/CartContext';
 import { useConfirmationModal } from '../hooks/useConfirmationModal';
 import Modal from './Modal';
+import { Link } from 'react-router-dom';
 import '../styles/ProductCard.css';
 
 export default function ProductCard({ product }) {
@@ -18,11 +19,13 @@ export default function ProductCard({ product }) {
 
   return (
     <div className="product-card">
-      <div>
+      {/* 👇 Îmbracă partea de sus a cardului într-un Link 👇 */}
+      <Link to={`/products/${product.id}`} className="product-card-link">
         <img src={product.image_url || 'https://via.placeholder.com/250'} alt={product.name} />
         <h3>{product.name}</h3>
         <p className="product-price">{product.price.toFixed(2)} RON</p>
-      </div>
+      </Link>
+      
       <div className="add-to-cart-controls">
         <input 
           type="number" 
@@ -33,7 +36,6 @@ export default function ProductCard({ product }) {
         <button onClick={() => openModal(product)}>Adaugă în Coș</button>
       </div>
 
-      {/* Modalul este specific fiecărui card, dar logica e reutilizabilă */}
       <Modal isOpen={isModalOpen && modalData?.id === product.id} onClose={closeModal}>
         <h3>Confirmare</h3>
         <p>Ești sigur că vrei să adaugi {quantity} buc. de "{product.name}" în coș?</p>
