@@ -19,6 +19,9 @@ import EditProductPage from './components/admin/EditProductPage';
 
 import Navbar from './components/layout/Navbar';
 
+import PaymentSuccessPage from './components/payment/PaymentSuccessPage';
+import PaymentCancelPage from './components/payment/PaymentCancelPage';
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './styles/App.css';
 
@@ -61,8 +64,12 @@ function App() {
             path="/admin/products/edit/:productId"
             element={<AdminProtectedRoute><EditProductPage /></AdminProtectedRoute>}
           />
-           <Route path="/search" element={<SearchResultsPage />} /> {/* <-- Ruta nouă */}
-           <Route path="/confirm/:token" element={<ConfirmationPage />} /> {/* <-- Ruta nouă */}
+          <Route path="/search" element={<SearchResultsPage />} /> {/* <-- Ruta nouă */}
+          <Route path="/confirm/:token" element={<ConfirmationPage />} /> {/* <-- Ruta nouă */}
+          
+          <Route path="/payment-success" element={<PaymentSuccessPage />} />
+          <Route path="/payment-cancel" element={<PaymentCancelPage />} />
+          
         </Routes>
       </main>
     </BrowserRouter>

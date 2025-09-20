@@ -31,7 +31,7 @@ export default function CartPage() {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/orders', {
+      const response = await fetch('http://localhost:8000/orders/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,9 +44,8 @@ export default function CartPage() {
         throw new Error('Eroare la plasarea comenzii');
       }
 
-      alert('Comanda a fost plasată cu succes!');
-      clearCart(); // Golim coșul
-      navigate('/my-orders'); // Redirecționăm la istoricul de comenzi
+      const session = await response.json();
+      window.location.href = session.url;
 
     } catch (error) {
       console.error(error);

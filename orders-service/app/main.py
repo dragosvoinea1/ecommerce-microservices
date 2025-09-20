@@ -4,18 +4,25 @@ import json
 import pika
 from typing import List
 
-from fastapi import FastAPI, Depends, HTTPException, status, Security
+from fastapi import FastAPI, Depends, HTTPException, status, Security, Request
 from fastapi.security import APIKeyHeader
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
 from . import models, db
 
+import stripe
+
 # --- Configurare ---
 models.Base.metadata.create_all(bind=db.engine)
 
 ROOT_PATH = os.environ.get("ROOT_PATH", "")
 app = FastAPI(title="Orders Service", root_path=ROOT_PATH)
+
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+FRONTEND_URL = "http://localhost:5173" # Adresa la care rulează frontend-ul
+stripe.api_key = STRIPE_SECRET_KEY
+
 
 # Adresele celorlalte servicii, citite din variabilele de mediu
 PRODUCTS_SERVICE_URL = os.environ.get("PRODUCTS_SERVICE_URL")
@@ -66,6 +73,60 @@ RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
 
 
 # --- Endpoints API ---
+@app.post("/create-checkout-session", status_code=status.HTTP_200_OK)
+async def create_checkout_session(
+    order_data: models.OrderCreate,
+    user_email: str = Depends(get_current_user_email)
+):
+    """
+    Creează o sesiune de plată în Stripe și returnează URL-ul de checkout.
+    """
+    line_items = []
+    product_ids_quantities = []
+
+    async with httpx.AsyncClient() as client:
+        for item in order_data.items:
+            try:
+                response = await client.get(f"{PRODUCTS_SERVICE_URL}/products/{item.product_id}")
+                response.raise_for_status()
+                product = response.json()
+
+                if product['stock'] < item.quantity:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Stoc insuficient pentru produsul ID {item.product_id}."
+                    )
+
+                line_items.append({
+                    "price_data": {
+                        "currency": "ron",
+                        "product_data": {"name": product['name']},
+                        "unit_amount": int(product['price'] * 100),
+                    },
+                    "quantity": item.quantity,
+                })
+                product_ids_quantities.append({"id": item.product_id, "quantity": item.quantity})
+
+            except httpx.HTTPStatusError:
+                raise HTTPException(status_code=404, detail=f"Produsul cu ID {item.product_id} nu a fost găsit.")
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode='payment',
+            success_url=f"{FRONTEND_URL}/payment-success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{FRONTEND_URL}/payment-cancel",
+            metadata={
+                "user_email": user_email,
+                "products": json.dumps(product_ids_quantities)
+            }
+        )
+        return {"url": checkout_session.url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("",
           response_model=models.Order,
           status_code=status.HTTP_201_CREATED)
@@ -162,27 +223,108 @@ async def get_user_orders(db: Session = Depends(get_db),
     return orders
 
 @app.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_order(
-    order_id: int,
-    db: Session = Depends(get_db),
-    owner_email: str = Depends(get_current_user_email)
-):
+def delete_order(order_id: int,
+                 db: Session = Depends(get_db),
+                 owner_email: str = Depends(get_current_user_email)):
     """
     Șterge o comandă specifică.
     Doar proprietarul comenzii o poate șterge.
     """
-    order_to_delete = db.query(models.DBOrder).filter(models.DBOrder.id == order_id).first()
+    order_to_delete = db.query(
+        models.DBOrder).filter(models.DBOrder.id == order_id).first()
 
     # Verificăm dacă comanda există
     if not order_to_delete:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comanda nu a fost găsită.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Comanda nu a fost găsită.")
 
     # Verificăm dacă utilizatorul curent este proprietarul comenzii
     if order_to_delete.owner_email != owner_email:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Nu ai permisiunea să ștergi această comandă.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nu ai permisiunea să ștergi această comandă.")
 
     # Ștergem comanda (și item-urile asociate vor fi șterse automat datorită relației din DB)
     db.delete(order_to_delete)
     db.commit()
 
     return
+
+
+@app.post("/webhook")
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    payload = await request.body()
+    # Pentru producție, ar trebui să validezi signatura cu un webhook secret
+    # event = stripe.Webhook.construct_event(payload, sig_header, secret)
+
+    try:
+        event = json.loads(payload)
+    except json.decoder.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid payload: {e}")
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+
+        user_email = session['metadata']['user_email']
+        products_info_str = session['metadata']['products']
+        products_info = json.loads(products_info_str)
+
+        total_amount = session['amount_total'] / 100.0
+
+        # --- AICI REUTILIZĂM LOGICA DIN VECHIUL ENDPOINT ---
+        order_items_to_create = []
+        products_to_update_stock = []
+
+        async with httpx.AsyncClient() as client:
+            for item in products_info:
+                response = await client.get(
+                    f"{PRODUCTS_SERVICE_URL}/products/{item['id']}")
+                product = response.json()
+                price_at_purchase = product['price']
+
+                order_items_to_create.append({
+                    "product_id":
+                    item['id'],
+                    "quantity":
+                    item['quantity'],
+                    "price_at_purchase":
+                    price_at_purchase
+                })
+                products_to_update_stock.append({
+                    "product_id": item['id'],
+                    "quantity": item['quantity']
+                })
+
+        # Salvarea în baza de date
+        new_order = models.DBOrder(owner_email=user_email,
+                                   total_amount=total_amount)
+        db.add(new_order)
+        db.commit()
+        db.refresh(new_order)
+
+        for item_data in order_items_to_create:
+            db_item = models.DBOrderItem(**item_data, order_id=new_order.id)
+            db.add(db_item)
+        db.commit()
+
+        # Trimiterea mesajului către RabbitMQ pentru actualizarea stocului
+        try:
+            connection = pika.BlockingConnection(
+                pika.URLParameters(RABBITMQ_URL))
+            channel = connection.channel()
+            channel.queue_declare(queue='stock_update_queue')
+            message_body = json.dumps({
+                "order_id": new_order.id,
+                "products": products_to_update_stock
+            })
+            channel.basic_publish(exchange='',
+                                  routing_key='stock_update_queue',
+                                  body=message_body)
+            connection.close()
+            print(
+                f" [x] Sent stock update message for order {new_order.id} after successful payment."
+            )
+        except Exception as e:
+            print(f"Error publishing to RabbitMQ after payment: {e}")
+
+    return {"status": "success"}

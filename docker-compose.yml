@@ -99,11 +99,11 @@ services:
     environment:
       - ROOT_PATH=/orders
       - DATABASE_URL=postgresql://user:password@orders_db/orders_db
-      # Adresa interna a serviciului de produse
       - PRODUCTS_SERVICE_URL=http://products-service:8000
       - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@# # <-- Adaugă asta
       - ALGORITHM=HS256 # <-- Și asta
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
     depends_on:
       orders_db:
         condition: service_healthy
