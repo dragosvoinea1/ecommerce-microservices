@@ -22,6 +22,9 @@ class DBUser(Base):
     confirmation_token = Column(String, unique=True, index=True, nullable=True)
     token_expiration = Column(DateTime, nullable=True)
 
+    reset_password_token = Column(String, unique=True, index=True, nullable=True)
+    reset_token_expiration = Column(DateTime, nullable=True)
+
 # Modele Pydantic (datele din API)
 class UserCreate(BaseModel):
     email: EmailStr
@@ -45,3 +48,10 @@ class User(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ResetPasswordData(BaseModel):
+    token: str
+    new_password: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr

@@ -33,7 +33,7 @@ async def reverse_proxy(request: Request, path: str):
 
     if first_segment == "products":
         target_service_url = PRODUCTS_SERVICE_URL
-    elif first_segment in ["users", "login", "register", "confirm"]:
+    elif first_segment in ["users", "login", "register", "confirm", "forgot-password", "reset-password"]:
         target_service_url = USER_SERVICE_URL
     elif first_segment == "orders":
         target_service_url = ORDERS_SERVICE_URL

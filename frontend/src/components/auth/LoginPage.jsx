@@ -1,7 +1,8 @@
 import { useState, useContext } from 'react'; // Importă useContext
-import { useNavigate } from 'react-router-dom'; // Importă useNavigate
+import { useNavigate, Link } from 'react-router-dom'; // Importă useNavigate
 import { AuthContext } from '../../context/AuthContext'; // Importă contextul
 import '../../styles/AuthForm.css';
+
 
 export default function LoginPage() {
    const [email, setEmail] = useState('');
@@ -66,6 +67,12 @@ export default function LoginPage() {
           <button type="submit" className="auth-button">Login</button>
           {error && <p className="error-message">{error}</p>}
         </form>
+
+        <div style={{ marginTop: '20px' }}>
+          <Link to="/forgot-password" style={{ color: '#88aaff', textDecoration: 'none' }}>
+            Ai uitat parola?
+          </Link>
+        </div>
       </div>
     </div>
   );

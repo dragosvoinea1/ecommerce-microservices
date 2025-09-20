@@ -22,6 +22,9 @@ import Navbar from './components/layout/Navbar';
 import PaymentSuccessPage from './components/payment/PaymentSuccessPage';
 import PaymentCancelPage from './components/payment/PaymentCancelPage';
 
+import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
+import ResetPasswordPage from './components/auth/ResetPasswordPage';
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './styles/App.css';
 
@@ -38,8 +41,11 @@ function App() {
           <Route path="/categories/:categoryId" element={<ProductsByCategoryPage />} /> {/* Rută dinamică nouă */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/my-orders" element={<OrderHistoryPage />} /> {/* <-- Adaugă această linie */}
+          
           <Route
             path="/admin"
             element={

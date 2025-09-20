@@ -119,6 +119,62 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), dat
 async def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
+@auth_router.post("/forgot-password")
+def forgot_password(request_data: models.ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Generează un token de resetare a parolei și îl "trimite" utilizatorului.
+    """
+    user_email = request_data.email
+
+    user = db.query(models.DBUser).filter(models.DBUser.email == user_email).first()
+    if not user:
+        print(f"Password reset attempt for non-existent user: {user_email}")
+        return {"message": "Dacă un cont cu acest email există, un link de resetare a fost trimis."}
+
+    # Generează un token sigur
+    reset_token = secrets.token_urlsafe(32)
+    
+    # Setează data de expirare (ex: 1 oră)
+    user.reset_password_token = reset_token
+    user.reset_token_expiration = datetime.utcnow() + timedelta(hours=1)
+    
+    db.commit()
+
+    # --- SIMULAREA TRIMITERII EMAIL-ULUI (AFIȘARE ÎN CONSOLĂ) ---
+    reset_link = f"http://localhost:5173/reset-password/{reset_token}"
+    print("--- EMAIL DE RESETARE PAROLĂ ---")
+    print(f"Pentru: {user.email}")
+    print(f"Click pe link: {reset_link}")
+    print("---------------------------------")
+    # -------------------------------------------------------------
+
+    return {"message": "Dacă un cont cu acest email există, un link de resetare a fost trimis."}
+
+
+@auth_router.post("/reset-password")
+def reset_password(data: models.ResetPasswordData, db: Session = Depends(get_db)):
+    """
+    Setează noua parolă dacă token-ul este valid.
+    """
+    user = db.query(models.DBUser).filter(models.DBUser.reset_password_token == data.token).first()
+
+    if not user or user.reset_token_expiration < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token-ul este invalid sau a expirat."
+        )
+
+    # Setează noua parolă
+    user.hashed_password = security.get_password_hash(data.new_password)
+    
+    # Invalidează token-ul după folosire
+    user.reset_password_token = None
+    user.reset_token_expiration = None
+    
+    db.commit()
+
+    return {"message": "Parola a fost resetată cu succes."}
+
 # Includem ambele routere în aplicația principală
 app.include_router(auth_router)
 app.include_router(users_router, prefix = "/users")
