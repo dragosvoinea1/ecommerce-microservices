@@ -25,6 +25,9 @@ import PaymentCancelPage from './components/payment/PaymentCancelPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
 import ResetPasswordPage from './components/auth/ResetPasswordPage';
 
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import UserProfilePage from './components/auth/UserProfilePage';
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './styles/App.css';
 
@@ -45,7 +48,12 @@ function App() {
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/my-orders" element={<OrderHistoryPage />} /> {/* <-- Adaugă această linie */}
-          
+
+          <Route
+            path="/profile"
+            element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>}
+          />
+
           <Route
             path="/admin"
             element={
@@ -72,10 +80,10 @@ function App() {
           />
           <Route path="/search" element={<SearchResultsPage />} /> {/* <-- Ruta nouă */}
           <Route path="/confirm/:token" element={<ConfirmationPage />} /> {/* <-- Ruta nouă */}
-          
+
           <Route path="/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/payment-cancel" element={<PaymentCancelPage />} />
-          
+
         </Routes>
       </main>
     </BrowserRouter>

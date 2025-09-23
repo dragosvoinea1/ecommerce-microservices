@@ -55,3 +55,10 @@ class ResetPasswordData(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None

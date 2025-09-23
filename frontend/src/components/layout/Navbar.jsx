@@ -24,6 +24,7 @@ export default function Navbar() {
         {token ? (
           <>
             <Link to="/my-orders">Comenzile Mele</Link>
+             <Link to="/profile">Profilul Meu</Link> {/* <-- LINK NOU */}
               {user && user.role === 'admin' && (
               <Link to="/admin">Admin</Link>
             )}

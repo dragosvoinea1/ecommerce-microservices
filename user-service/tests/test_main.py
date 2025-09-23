@@ -128,3 +128,26 @@ def test_login_incorrect_password(client):
     
     assert response.status_code == 401
     assert response.json()["detail"] == "Incorrect email or password"
+
+def test_update_user_me(client, db_session):
+    """Testează actualizarea cu succes a datelor utilizatorului."""
+    # 1. Înregistrează și activează un utilizator
+    client.post("/register", json=user_data)
+    user_in_db = db_session.query(models.DBUser).filter_by(email=user_data["email"]).first()
+    client.get(f"/confirm/{user_in_db.confirmation_token}")
+
+    # 2. Obține un token de login
+    login_res = client.post("/login", data={"username": user_data["email"], "password": user_data["password"]})
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 3. Actualizează datele
+    update_payload = {"full_name": "New Name", "city": "New City"}
+    response = client.put("/users/me", headers=headers, json=update_payload)
+
+    # 4. Verifică răspunsul
+    assert response.status_code == 200
+    data = response.json()
+    assert data["full_name"] == "New Name"
+    assert data["city"] == "New City"
+    assert data["email"] == user_data["email"] # Verificăm că alte date au rămas la fel

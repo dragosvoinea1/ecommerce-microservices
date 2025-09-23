@@ -119,6 +119,31 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), dat
 async def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
+@users_router.get("/me", response_model=models.User)
+async def read_users_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
+
+# --- ADAUGĂ ACEST ENDPOINT NOU ---
+@users_router.put("/me", response_model=models.User)
+async def update_user_me(
+    user_data: models.UserUpdate, 
+    db: Session = Depends(get_db), 
+    current_user: models.DBUser = Depends(get_current_user)
+):
+    """
+    Permite utilizatorului autentificat să-și actualizeze datele.
+    """
+    update_data = user_data.dict(exclude_unset=True) # Extrage doar datele trimise
+    
+    for key, value in update_data.items():
+        setattr(current_user, key, value)
+        
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    
+    return current_user
+
 @auth_router.post("/forgot-password")
 def forgot_password(request_data: models.ForgotPasswordRequest, db: Session = Depends(get_db)):
     """
@@ -177,4 +202,4 @@ def reset_password(data: models.ResetPasswordData, db: Session = Depends(get_db)
 
 # Includem ambele routere în aplicația principală
 app.include_router(auth_router)
-app.include_router(users_router, prefix = "/users")
+app.include_router(users_router)
