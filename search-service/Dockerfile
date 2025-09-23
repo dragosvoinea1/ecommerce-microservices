@@ -7,7 +7,8 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./app /code/app
-
+COPY ./tests /code/tests
+COPY ./pytest.ini /code/pytest.ini
 # Copiază fișierul de configurare pentru supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

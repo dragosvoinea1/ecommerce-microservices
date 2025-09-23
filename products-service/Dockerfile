@@ -3,6 +3,8 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./app /code/app
+COPY ./tests /code/tests
+COPY ./pytest.ini /code/pytest.ini
 
 EXPOSE 8000
 # Comanda CMD actualizată care pornește ambele procese

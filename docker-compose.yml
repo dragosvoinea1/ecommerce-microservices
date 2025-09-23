@@ -29,6 +29,8 @@ services:
     build: ./products-service
     volumes:
       - ./products-service/app:/code/app
+      - ./products-service/tests:/code/tests
+      - ./products-service/pytest.ini:/code/pytest.ini
     environment:
       - ROOT_PATH=/products
       - DATABASE_URL=postgresql://user:password@products_db/products_db
@@ -64,6 +66,8 @@ services:
     build: ./user-service
     volumes:
       - ./user-service/app:/code/app
+      - ./user-service/tests:/code/tests
+      - ./user-service/pytest.ini:/code/pytest.ini
     environment:
       - ROOT_PATH=/users
       - DATABASE_URL=postgresql://user:password@user_db/user_db
@@ -96,6 +100,8 @@ services:
     build: ./orders-service
     volumes:
       - ./orders-service/app:/code/app
+      - ./orders-service/tests:/code/tests
+      - ./orders-service/pytest.ini:/code/pytest.ini
     environment:
       - ROOT_PATH=/orders
       - DATABASE_URL=postgresql://user:password@orders_db/orders_db
@@ -132,7 +138,9 @@ services:
   reviews-service:
     build: ./reviews-service
     volumes:
-      - ./reviews-service/app:/code/app
+      - ./reviews-service/app:/code/app # Mapăm sursele aplicației
+      - ./reviews-service/tests:/code/tests # NOU: Mapăm testele
+      - ./reviews-service/pytest.ini:/code/pytest.ini # NOU: Mapăm configurarea pytest
     environment:
       - ROOT_PATH=/reviews
       - DATABASE_URL=postgresql://user:password@reviews_db/reviews_db
@@ -195,6 +203,8 @@ services:
     build: ./search-service
     volumes:
       - ./search-service/app:/code/app
+      - ./search-service/tests:/code/tests
+      - ./search-service/pytest.ini:/code/pytest.ini
     environment:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
       - ELASTICSEARCH_URL=http://elasticsearch:9200

@@ -2,3 +2,6 @@ fastapi
 uvicorn[standard]
 pika
 elasticsearch==7.17.2 # <-- Specifică versiunea exactă
+httpx
+pytest
+pytest-mock

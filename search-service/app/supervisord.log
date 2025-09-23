@@ -1,0 +1,21 @@
+2025-09-22 18:23:29,996 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2025-09-22 18:23:30,001 INFO supervisord started with pid 1
+2025-09-22 18:23:31,005 INFO spawned: 'consumer' with pid 7
+2025-09-22 18:23:31,008 INFO spawned: 'uvicorn' with pid 8
+2025-09-22 18:23:31,069 WARN exited: consumer (exit status 1; not expected)
+2025-09-22 18:23:31,513 WARN exited: uvicorn (exit status 1; not expected)
+2025-09-22 18:23:32,518 INFO spawned: 'consumer' with pid 9
+2025-09-22 18:23:32,523 INFO spawned: 'uvicorn' with pid 10
+2025-09-22 18:23:32,583 WARN exited: consumer (exit status 1; not expected)
+2025-09-22 18:23:32,986 WARN exited: uvicorn (exit status 1; not expected)
+2025-09-22 18:23:34,992 INFO spawned: 'consumer' with pid 11
+2025-09-22 18:23:34,996 INFO spawned: 'uvicorn' with pid 12
+2025-09-22 18:23:35,030 WARN exited: consumer (exit status 1; not expected)
+2025-09-22 18:23:35,262 WARN exited: uvicorn (exit status 1; not expected)
+2025-09-22 18:23:38,269 INFO spawned: 'consumer' with pid 13
+2025-09-22 18:23:38,272 INFO spawned: 'uvicorn' with pid 14
+2025-09-22 18:23:38,307 WARN exited: consumer (exit status 1; not expected)
+2025-09-22 18:23:38,464 INFO gave up: consumer entered FATAL state, too many start retries too quickly
+2025-09-22 18:23:38,493 WARN exited: uvicorn (exit status 1; not expected)
+2025-09-22 18:23:39,498 INFO gave up: uvicorn entered FATAL state, too many start retries too quickly
+2025-09-22 18:34:12,206 WARN received SIGTERM indicating exit request

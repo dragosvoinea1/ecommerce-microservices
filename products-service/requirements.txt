@@ -5,3 +5,6 @@ sqlalchemy
 psycopg2-binary
 pika
 python-jose[cryptography]
+httpx
+pytest
+pytest-mock
