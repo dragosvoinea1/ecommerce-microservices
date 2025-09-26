@@ -1,5 +1,7 @@
 import { useState, useContext } from 'react';
 import { CartContext } from '../../context/CartContext';
+import { AuthContext } from '../../context/AuthContext';
+import { WishlistContext } from '../../context/WishlistContext'; 
 import { useConfirmationModal } from '../../hooks/useConfirmationModal';
 import Modal from '../ui/Modal';
 import { Link } from 'react-router-dom';
@@ -8,6 +10,8 @@ import '../../styles/ProductCard.css';
 export default function ProductCard({ product }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useContext(CartContext);
+  const { token } = useContext(AuthContext);
+  const { addToWishlist, removeFromWishlist, isProductInWishlist } = useContext(WishlistContext);
   const { isModalOpen, modalData, openModal, closeModal } = useConfirmationModal();
 
   const confirmAddToCart = () => {
@@ -17,15 +21,42 @@ export default function ProductCard({ product }) {
     closeModal();
   };
 
+  const inWishlist = isProductInWishlist(product.id);
+
+  const handleWishlistToggle = () => {
+    if (!token) {
+      alert("Trebuie să fii autentificat pentru a folosi wishlist-ul.");
+      return;
+    }
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product.id);
+    }
+  };
+
   return (
     <div className="product-card">
-      {/* 👇 Îmbracă partea de sus a cardului într-un Link 👇 */}
+      {/* Partea clickabilă a cardului care duce la pagina de detalii */}
       <Link to={`/products/${product.id}`} className="product-card-link">
+        {/* --- Butonul de Wishlist MUTAT AICI --- */}
+        {/* Este afișat doar dacă utilizatorul este logat */}
+
         <img src={product.image_url || 'https://via.placeholder.com/250'} alt={product.name} />
         <h3>{product.name}</h3>
         <p className="product-price">{product.price.toFixed(2)} RON</p>
       </Link>
-      
+              {token && (
+          <button 
+            onClick={handleWishlistToggle} 
+            className={`wishlist-btn ${inWishlist ? 'active' : ''}`}
+            title={inWishlist ? 'Șterge din wishlist' : 'Adaugă în wishlist'}
+          >
+            {inWishlist ? '❤️' : '♡'}
+          </button>
+        )}
+
+      {/* Controalele pentru adăugarea în coș */}
       <div className="add-to-cart-controls">
         <input 
           type="number" 
@@ -36,6 +67,7 @@ export default function ProductCard({ product }) {
         <button onClick={() => openModal(product)}>Adaugă în Coș</button>
       </div>
 
+      {/* Modalul de confirmare pentru adăugarea în coș */}
       <Modal isOpen={isModalOpen && modalData?.id === product.id} onClose={closeModal}>
         <h3>Confirmare</h3>
         <p>Ești sigur că vrei să adaugi {quantity} buc. de "{product.name}" în coș?</p>

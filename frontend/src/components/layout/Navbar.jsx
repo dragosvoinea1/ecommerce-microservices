@@ -16,16 +16,17 @@ export default function Navbar() {
         <Link to="/categories">Categorii</Link> {/* <-- Link nou */}
       </div>
 
-        <SearchBar />
-        
+      <SearchBar />
+
       <div className="navbar-links">
         <Link to="/cart">Coș ({items.length})</Link>
-        
+
         {token ? (
           <>
             <Link to="/my-orders">Comenzile Mele</Link>
-             <Link to="/profile">Profilul Meu</Link> {/* <-- LINK NOU */}
-              {user && user.role === 'admin' && (
+            <Link to="/wishlist">Wishlist</Link> {/* <-- LINK NOU */}
+            <Link to="/profile">Profilul Meu</Link> {/* <-- LINK NOU */}
+            {user && user.role === 'admin' && (
               <Link to="/admin">Admin</Link>
             )}
             <button onClick={logout}>Logout</button>

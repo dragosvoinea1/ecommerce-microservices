@@ -1,45 +1,113 @@
+/* === Product Card Container === */
 .product-card {
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 1rem;
+  width: 280px;
+  background-color: #1e1e1e; /* Un fundal mai închis, aproape negru */
+  border: 1px solid #333;
+  border-radius: 12px;
   margin: 1rem;
-  width: 250px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background-color: #2f2f2f;
+  overflow: hidden; /* Asigură că imaginea nu depășește colțurile rotunjite */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(136, 170, 255, 0.1);
+}
+
+/* === Link-ul ce conține imaginea și textul === */
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+/* === Imaginea Produsului === */
 .product-card img {
-  max-width: 100%;
-  height: 200px;
+  width: 100%;
+  height: 220px;
   object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  display: block;
+}
+
+/* === Detaliile Produsului (Nume, Preț) === */
+.product-details {
+  padding: 1rem 1.2rem;
+  text-align: left;
 }
 
 .product-card h3 {
-  margin: 0.5rem 0;
+  margin: 0 0 0.5rem;
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #e0e0e0;
+  min-height: 2.5em; /* Asigură o înălțime constantă pentru 2 rânduri de text */
 }
 
-.product-price {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-}
-
-.add-to-cart-controls {
+.product-price-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.product-price {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: #88aaff; /* O culoare de accent albastră */
+}
+
+/* === Butonul de Wishlist (Inima) === */
+.wishlist-btn {
+  background: none;
+  border: none;
+  color: #777; /* Gri pentru starea inactivă */
+  cursor: pointer;
+  font-size: 1.8em;
+  padding: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.wishlist-btn:hover {
+  transform: scale(1.15);
+}
+
+.wishlist-btn.active {
+  color: #ff6b6b; /* Roșu vibrant pentru starea activă */
+}
+
+/* === Controalele pentru "Adaugă în Coș" === */
+.add-to-cart-controls {
+  display: flex;
+  margin: auto 1.2rem 1.2rem; /* Aliniat la bază */
+  gap: 0.5rem;
 }
 
 .add-to-cart-controls input {
   width: 60px;
+  background-color: #333;
+  border: 1px solid #555;
+  color: #e0e0e0;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 1em;
+  padding: 0.6rem;
 }
 
-.product-card-link {
-  text-decoration: none;
-  color: inherit;
+.add-to-cart-controls button {
+  flex-grow: 1; /* Butonul va ocupa spațiul rămas */
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-to-cart-controls button:hover {
+  background-color: #535bf2;
 }

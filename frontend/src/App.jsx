@@ -28,6 +28,8 @@ import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import UserProfilePage from './components/auth/UserProfilePage';
 
+import WishlistPage from './components/wishlist/WishlistPage';
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './styles/App.css';
 
@@ -83,6 +85,11 @@ function App() {
 
           <Route path="/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/payment-cancel" element={<PaymentCancelPage />} />
+
+            <Route
+            path="/wishlist" // <-- RUTĂ NOUĂ
+            element={<ProtectedRoute><WishlistPage /></ProtectedRoute>}
+          />
 
         </Routes>
       </main>

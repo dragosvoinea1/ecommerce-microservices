@@ -11,6 +11,7 @@ services:
       - ORDERS_SERVICE_URL=http://orders-service:8000
       - SEARCH_SERVICE_URL=http://search-service:8000
       - REVIEWS_SERVICE_URL=http://reviews-service:8000
+      - WISHLIST_SERVICE_URL=http://wishlist-service:8000
     depends_on:
       products-service:
         condition: service_started
@@ -189,6 +190,11 @@ services:
       - "9200:9200" # Portul API pentru Elasticsearch
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.3
@@ -208,6 +214,38 @@ services:
     environment:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy 
+
+  wishlist-service:
+    build: ./wishlist-service
+    environment:
+      - DATABASE_URL=postgresql://user:password@wishlist_db/wishlist_db
+      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
+      - ALGORITHM=HS256
+    depends_on:
+      wishlist_db:
+        condition: service_healthy
+
+  wishlist_db:
+    image: postgres:14-alpine
+    ports:
+      - "5436:5432" # Folosește un port nou
+    volumes:
+      - wishlist_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=wishlist_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d wishlist_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 
 # Definirea volumelor
 volumes:
@@ -216,3 +254,4 @@ volumes:
   orders_data:
   elastic_data:
   reviews_data:
+  wishlist_data:
