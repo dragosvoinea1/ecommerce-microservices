@@ -13,7 +13,8 @@ export default function ManageProductsPage() {
         price: '',
         stock: '',
         image_url: '',
-        category_id: ''
+        category_id: '',
+        discount_percentage: 0 // <-- VALOARE INIȚIALĂ
     });
     const [categories, setCategories] = useState([]); // Stare pentru a ține minte categoriile
     const [feedback, setFeedback] = useState({ message: '', type: '' });
@@ -73,7 +74,8 @@ export default function ManageProductsPage() {
             ...product,
             price: parseFloat(product.price),
             stock: parseInt(product.stock, 10),
-            category_id: parseInt(product.category_id, 10)
+            category_id: parseInt(product.category_id, 10),
+            discount_percentage: parseFloat(product.discount_percentage) // <-- CONVERSIE NOUĂ
         };
 
         try {
@@ -93,7 +95,7 @@ export default function ManageProductsPage() {
 
             setFeedback({ message: 'Produsul a fost adăugat cu succes!', type: 'success' });
             // Resetăm formularul
-            setProduct({ name: '', description: '', price: '', stock: '', image_url: '', category_id: categories.length > 0 ? categories[0].id : '' });
+            setProduct({ name: '', description: '', price: '', stock: '', image_url: '', category_id: categories.length > 0 ? categories[0].id : '', discount_percentage: 0 });
             fetchProducts(); // Reîncărcăm lista de produse
 
         } catch (err) {
@@ -138,6 +140,20 @@ export default function ManageProductsPage() {
                     <input name="price" type="number" value={product.price} onChange={handleChange} placeholder="Preț" required className="admin-input" style={{ marginBottom: '10px' }} />
                     <input name="stock" type="number" value={product.stock} onChange={handleChange} placeholder="Stoc" required className="admin-input" style={{ marginBottom: '10px' }} />
                     <input name="image_url" value={product.image_url} onChange={handleChange} placeholder="URL Imagine" className="admin-input" style={{ marginBottom: '10px' }} />
+                    
+                    {/* --- CÂMP NOU PENTRU DISCOUNT --- */}
+                    <input 
+                        name="discount_percentage" 
+                        type="number" 
+                        value={product.discount_percentage} 
+                        onChange={handleChange} 
+                        placeholder="Procentaj Discount (ex: 10)" 
+                        className="admin-input" 
+                        style={{ marginBottom: '10px' }} 
+                        step="0.01"
+                        min="0"
+                        max="100"
+                    />
 
                     <select name="category_id" value={product.category_id} onChange={handleChange} required className="admin-input" style={{ marginBottom: '20px' }}>
                         {categories.map(category => (
@@ -155,7 +171,7 @@ export default function ManageProductsPage() {
                     {products.map(p => (
                         <li key={p.id} className="admin-list-item">
                             <span>{p.name} ({p.category.name}) - {p.stock} buc.</span>
-                            <div> {/* Grupăm butoanele */}
+                            <div>
                                 <Link
                                     to={`/admin/products/edit/${p.id}`}
                                     className="admin-button"

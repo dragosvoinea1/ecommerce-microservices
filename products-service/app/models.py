@@ -24,6 +24,7 @@ class ProductBase(BaseModel):
     price: float
     stock: int
     image_url: Optional[str] = None # Asigurăm că este aici
+    discount_percentage: Optional[float] = None
 
 class ProductCreate(ProductBase):
     category_id: int
@@ -38,6 +39,7 @@ class Product(ProductBase):  # Moștenește 'image_url' de la ProductBase
 
 # Adaugă această clasă în products-service/app/models.py, alături de celelalte modele Pydantic
 
+
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
@@ -45,6 +47,7 @@ class ProductUpdate(BaseModel):
     stock: Optional[int] = None
     image_url: Optional[str] = None
     category_id: Optional[int] = None
+    discount_percentage: Optional[float] = None
 
 # --- Modele SQLAlchemy (Baza de Date) ---
 
@@ -65,3 +68,4 @@ class DBProduct(Base):
     image_url = Column(String, nullable=True)  # Asigurăm că este aici
     category_id = Column(Integer, ForeignKey("categories.id"))
     category = relationship("DBCategory", back_populates="products")
+    discount_percentage = Column(Float, nullable=True, default=0.0)

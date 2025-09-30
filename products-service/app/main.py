@@ -5,7 +5,6 @@ import os
 import pika
 import json
 
-
 from . import models, db
 from .dependencies import get_current_admin_user
 
@@ -18,20 +17,21 @@ app = FastAPI(title="Products Service", root_path=ROOT_PATH)
 
 RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
 
+
 def publish_product_event(action: str, product: dict):
     """Publică un eveniment despre un produs într-o coadă directă."""
     try:
         connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
         channel = connection.channel()
-        
+
         # Declarăm o coadă durabilă cu un nume fix
         channel.queue_declare(queue='product_events_queue', durable=True)
-        
-        message = { "action": action, "product": product }
-        
+
+        message = {"action": action, "product": product}
+
         channel.basic_publish(
             exchange='',
-            routing_key='product_events_queue', # Trimitem direct la coadă
+            routing_key='product_events_queue',  # Trimitem direct la coadă
             body=json.dumps(message, default=str),
             properties=pika.BasicProperties(
                 delivery_mode=2,  # Facem mesajul persistent
@@ -40,6 +40,7 @@ def publish_product_event(action: str, product: dict):
         connection.close()
     except Exception as e:
         print(f" [!] Error publishing product event: {e}")
+
 
 # Functie pentru a obtine o sesiune de baza de date (Dependency Injection)
 def get_db():
@@ -74,18 +75,23 @@ def create_product(product_data: models.ProductCreate,
                    admin_user: dict = Depends(get_current_admin_user)):
     """Creează un produs nou. Necesită rol de admin."""
 
-    new_product = models.DBProduct(name=product_data.name,
-                                   description=product_data.description,
-                                   price=product_data.price,
-                                   stock=product_data.stock,
-                                   image_url=product_data.image_url,
-                                   category_id=product_data.category_id)
+    new_product = models.DBProduct(
+        name=product_data.name,
+        description=product_data.description,
+        price=product_data.price,
+        stock=product_data.stock,
+        image_url=product_data.image_url,
+        category_id=product_data.category_id,
+        discount_percentage=product_data.discount_percentage)
 
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
-    product_dict = {c.name: getattr(new_product, c.name) for c in new_product.__table__.columns}
-    publish_product_event("create", product_dict)   
+    product_dict = {
+        c.name: getattr(new_product, c.name)
+        for c in new_product.__table__.columns
+    }
+    publish_product_event("create", product_dict)
     return new_product
 
 
@@ -185,6 +191,9 @@ def update_product(product_id: int,
     db.commit()
     db.refresh(product_to_update)
 
-    product_dict = {c.name: getattr(product_to_update, c.name) for c in product_to_update.__table__.columns}
+    product_dict = {
+        c.name: getattr(product_to_update, c.name)
+        for c in product_to_update.__table__.columns
+    }
     publish_product_event("update", product_dict)
     return product_to_update

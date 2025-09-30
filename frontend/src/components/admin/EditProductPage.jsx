@@ -9,7 +9,8 @@ const initialFormState = {
     price: '',
     stock: '',
     image_url: '',
-    category_id: ''
+    category_id: '',
+    discount_percentage: 0
 };
 
 export default function EditProductPage() {
@@ -50,7 +51,8 @@ export default function EditProductPage() {
                     price: data.price || '',
                     stock: data.stock || '',
                     image_url: data.image_url || '',
-                    category_id: data.category.id || ''
+                    category_id: data.category.id || '',
+                    discount_percentage: data.discount_percentage || 0
                 });
             } catch (error) {
                 setFeedback({ message: error.message, type: 'error' });
@@ -77,7 +79,8 @@ export default function EditProductPage() {
             price: parseFloat(product.price),
             stock: parseInt(product.stock, 10),
             image_url: product.image_url,
-            category_id: parseInt(product.category_id, 10)
+            category_id: parseInt(product.category_id, 10),
+            discount_percentage: parseFloat(product.discount_percentage)
         };
 
         try {
@@ -165,6 +168,21 @@ export default function EditProductPage() {
                             value={product.image_url}
                             onChange={handleChange}
                             className="admin-input"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="discount_percentage">Procentaj Discount (%)</label>
+                        <input
+                            id="discount_percentage"
+                            name="discount_percentage"
+                            type="number"
+                            value={product.discount_percentage}
+                            onChange={handleChange}
+                            className="admin-input"
+                            step="0.01"
+                            min="0"
+                            max="100"
                         />
                     </div>
 

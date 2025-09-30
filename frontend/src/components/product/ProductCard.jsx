@@ -35,16 +35,27 @@ export default function ProductCard({ product }) {
     }
   };
 
+  const hasDiscount = product.discount_percentage && product.discount_percentage > 0;
+  const discountedPrice = hasDiscount 
+    ? product.price * (1 - product.discount_percentage / 100) 
+    : product.price;
+
   return (
     <div className="product-card">
-      {/* Partea clickabilă a cardului care duce la pagina de detalii */}
       <Link to={`/products/${product.id}`} className="product-card-link">
-        {/* --- Butonul de Wishlist MUTAT AICI --- */}
-        {/* Este afișat doar dacă utilizatorul este logat */}
 
         <img src={product.image_url || 'https://via.placeholder.com/250'} alt={product.name} />
         <h3>{product.name}</h3>
-        <p className="product-price">{product.price.toFixed(2)} RON</p>
+        <div className="product-price-container">
+          {hasDiscount ? (
+            <>
+              <span className="original-price">{product.price.toFixed(2)} RON</span>
+              <span className="discounted-price">{discountedPrice.toFixed(2)} RON</span>
+            </>
+          ) : (
+            <span className="product-price">{product.price.toFixed(2)} RON</span>
+          )}
+        </div>
       </Link>
               {token && (
           <button 

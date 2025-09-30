@@ -33,13 +33,27 @@ export default function ProductDetailPage() {
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
   if (!product) return <p>Nu am găsit detalii pentru acest produs.</p>;
 
+  const hasDiscount = product.discount_percentage && product.discount_percentage > 0;
+  const discountedPrice = hasDiscount
+    ? product.price * (1 - product.discount_percentage / 100)
+    : product.price;
+
   return (
     <div className="product-detail-container">
       <div className="product-info">
         <img src={product.image_url || 'https://via.placeholder.com/400'} alt={product.name} className="product-detail-image" />
         <div className="product-detail-text">
           <h1>{product.name}</h1>
-          <p className="product-detail-price">{product.price.toFixed(2)} RON</p>
+           <div className="product-detail-price">
+            {hasDiscount ? (
+              <>
+                <span className="original-price-detail">{product.price.toFixed(2)} RON</span>
+                <span className="discounted-price-detail">{discountedPrice.toFixed(2)} RON</span>
+              </>
+            ) : (
+              <span>{product.price.toFixed(2)} RON</span>
+            )}
+          </div>
           <p className="product-detail-description">{product.description}</p>
           {/* Aici poți adăuga controalele pentru "Adaugă în coș" dacă dorești */}
         </div>

@@ -96,12 +96,19 @@ async def create_checkout_session(
                         status_code=400,
                         detail=f"Stoc insuficient pentru produsul ID {item.product_id}."
                     )
+                
+                # <-- LOGICA NOUĂ PENTRU CALCULUL PREȚULUI REDUS -->
+                price = product['price']
+                discount = product.get('discount_percentage', 0)
+                if discount > 0:
+                    price = price * (1 - discount / 100)
+                # <-- SFÂRȘIT LOGICĂ NOUĂ -->
 
                 line_items.append({
                     "price_data": {
                         "currency": "ron",
                         "product_data": {"name": product['name']},
-                        "unit_amount": int(product['price'] * 100),
+                        "unit_amount": int(price * 100), # <-- Folosim prețul final
                     },
                     "quantity": item.quantity,
                 })
@@ -153,8 +160,14 @@ async def create_order(order_data: models.OrderCreate,
                         status_code=400,
                         detail=f"Stoc insuficient pentru produsul ID {item.product_id}. Stoc disponibil: {product['stock']}"
                     )
-
+                
+                # <-- LOGICA NOUĂ PENTRU CALCULUL PREȚULUI REDUS -->
                 price_at_purchase = product['price']
+                discount = product.get('discount_percentage', 0)
+                if discount > 0:
+                    price_at_purchase = price_at_purchase * (1 - discount / 100)
+                # <-- SFÂRȘIT LOGICĂ NOUĂ -->
+                
                 total_amount += price_at_purchase * item.quantity
                 order_items_to_create.append({
                     "product_id":
@@ -162,7 +175,7 @@ async def create_order(order_data: models.OrderCreate,
                     "quantity":
                     item.quantity,
                     "price_at_purchase":
-                    price_at_purchase
+                    price_at_purchase # <-- Folosim prețul final
                 })
                 products_to_update_stock.append({  # <-- Adăugăm aici
                     "product_id": item.product_id,
@@ -280,7 +293,13 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                 response = await client.get(
                     f"{PRODUCTS_SERVICE_URL}/products/{item['id']}")
                 product = response.json()
+                
+                # <-- LOGICA NOUĂ PENTRU CALCULUL PREȚULUI REDUS -->
                 price_at_purchase = product['price']
+                discount = product.get('discount_percentage', 0)
+                if discount > 0:
+                    price_at_purchase = price_at_purchase * (1 - discount / 100)
+                # <-- SFÂRȘIT LOGICĂ NOUĂ -->
 
                 order_items_to_create.append({
                     "product_id":
@@ -288,7 +307,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                     "quantity":
                     item['quantity'],
                     "price_at_purchase":
-                    price_at_purchase
+                    price_at_purchase # <-- Folosim prețul final
                 })
                 products_to_update_stock.append({
                     "product_id": item['id'],

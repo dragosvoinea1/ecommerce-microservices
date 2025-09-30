@@ -27,6 +27,10 @@ export const CartProvider = ({ children }) => {
       // Verificăm dacă produsul este deja în coș
       const existingItem = prevItems.find((item) => item.id === product.id);
 
+      const priceToAdd = product.discount_percentage && product.discount_percentage > 0
+        ? product.price * (1 - product.discount_percentage / 100)
+        : product.price;
+
       if (existingItem) {
         // Dacă există, adunăm noua cantitate la cea existentă
         return prevItems.map((item) =>
@@ -36,7 +40,7 @@ export const CartProvider = ({ children }) => {
         );
       } else {
         // Dacă nu există, îl adăugăm cu cantitatea specificată
-        return [...prevItems, { ...product, quantity }]; // <-- Folosim noua cantitate
+        return [...prevItems, { ...product, quantity, price: priceToAdd }];
       }
     });
   };
