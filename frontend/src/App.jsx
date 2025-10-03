@@ -33,9 +33,71 @@ import WishlistPage from './components/wishlist/WishlistPage';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './styles/App.css';
 
+import { useEffect, useContext, useState, useRef } from 'react';
+import { AuthContext } from './context/AuthContext';
+
 function App() {
+  const { user } = useContext(AuthContext);
+  const [notification, setNotification] = useState(null);
+  const ws = useRef(null); // <-- 2. Inițializează un ref pentru WebSocket
+
+  useEffect(() => {
+    // Dacă nu există utilizator logat, ne asigurăm că orice conexiune veche este închisă
+    if (!user?.sub) {
+      if (ws.current) {
+        ws.current.close();
+        ws.current = null;
+      }
+      return;
+    }
+
+    // Dacă există deja o conexiune activă, nu facem nimic
+    if (ws.current) {
+      return;
+    }
+
+    // Creăm o singură dată conexiunea
+    ws.current = new WebSocket(`ws://localhost:8000/ws/${user.sub}`);
+
+    ws.current.onopen = () => {
+      console.log("WebSocket connected"); // Vei vedea asta în consolă
+    };
+
+    ws.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setNotification(data.message);
+      setTimeout(() => setNotification(null), 5000);
+    };
+
+    ws.current.onclose = () => {
+      console.log("WebSocket disconnected");
+      // Resetează ref-ul pentru a permite reconectarea la următorul login/refresh
+      ws.current = null;
+    };
+
+    ws.current.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+    };
+
+    // Funcția de curățare se va asigura că la demontarea completă a aplicației, conexiunea se închide
+    return () => {
+      if (ws.current) {
+        ws.current.close();
+      }
+    };
+  }, [user]);
+
   return (
     <BrowserRouter>
+      {notification && (
+        <div style={{
+          position: 'fixed', top: '80px', right: '20px',
+          padding: '15px', backgroundColor: '#646cff', color: 'white',
+          borderRadius: '8px', zIndex: 1001, boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+        }}>
+          🔔 {notification}
+        </div>
+      )}
       <Navbar />
       <hr />
       <main>

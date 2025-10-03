@@ -12,6 +12,7 @@ services:
       - SEARCH_SERVICE_URL=http://search-service:8000
       - REVIEWS_SERVICE_URL=http://reviews-service:8000
       - WISHLIST_SERVICE_URL=http://wishlist-service:8000
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:8000
     depends_on:
       products-service:
         condition: service_started
@@ -36,6 +37,8 @@ services:
       - ROOT_PATH=/products
       - DATABASE_URL=postgresql://user:password@products_db/products_db
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
+      - WISHLIST_SERVICE_URL=http://wishlist-service:8000
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:8000
       - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
       - ALGORITHM=HS256
     depends_on:
@@ -226,8 +229,11 @@ services:
       - DATABASE_URL=postgresql://user:password@wishlist_db/wishlist_db
       - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
       - ALGORITHM=HS256
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq 
     depends_on:
       wishlist_db:
+        condition: service_healthy
+      rabbitmq: 
         condition: service_healthy
 
   wishlist_db:
@@ -245,6 +251,30 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  
+  notifications-service:
+    build: ./notifications-service
+    environment:
+      - DATABASE_URL=postgresql://user:password@notifications_db/notifications_db
+    depends_on:
+      notifications_db:
+        condition: service_healthy
+
+  notifications_db:
+    image: postgres:14-alpine
+    ports:
+      - "5437:5432" # Folosește un port nou
+    volumes:
+      - notifications_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=notifications_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d notifications_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 
 # Definirea volumelor
@@ -255,3 +285,4 @@ volumes:
   elastic_data:
   reviews_data:
   wishlist_data:
+  notifications_data:

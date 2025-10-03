@@ -97,3 +97,13 @@ def remove_from_wishlist(
     db.delete(item_to_delete)
     db.commit()
     return
+
+@app.get("/wishlist/users-by-product/{product_id}", response_model=List[str])
+def get_users_for_product(product_id: int, db: Session = Depends(get_db)):
+    """
+    Returnează o listă de email-uri ale utilizatorilor care au un anume produs în wishlist.
+    """
+    items = db.query(models.DBWishlistItem.user_email).filter(models.DBWishlistItem.product_id == product_id).distinct().all()
+    # .all() returnează o listă de tuple-uri, ex: [('user1@a.com',), ('user2@b.com',)]
+    # Trebuie să le transformăm într-o listă simplă de string-uri
+    return [item[0] for item in items]

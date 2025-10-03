@@ -18,7 +18,7 @@ def search_products(q: str, es: Elasticsearch = Depends(get_es_client)):
                     {
                         "multi_match": {
                             "query": q,
-                            "fields": ["name", "description"],
+                            "fields": ["name^3", "description"],
                             "type": "best_fields",
                             "fuzziness": "AUTO"
                         }
@@ -26,7 +26,7 @@ def search_products(q: str, es: Elasticsearch = Depends(get_es_client)):
                     {
                         "multi_match": {
                             "query": q,
-                            "fields": ["name", "description"],
+                            "fields": ["name^3", "description"],
                             "type": "phrase_prefix"
                         }
                     }

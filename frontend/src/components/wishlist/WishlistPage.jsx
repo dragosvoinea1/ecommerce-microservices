@@ -17,12 +17,25 @@ export default function WishlistPage() {
             
             setLoading(true);
             try {
-                const productIds = wishlistItems.map(item => item.product_id);
-                const productPromises = productIds.map(id =>
-                    fetch(`http://localhost:8000/products/${id}`).then(res => res.json())
-                );
+                // Creăm o listă de promisiuni care aduc detaliile fiecărui produs
+                const productPromises = wishlistItems.map(async (item) => {
+                    const response = await fetch(`http://localhost:8000/products/${item.product_id}`);
+                    
+                    // --- AICI ESTE CORECTURA CHEIE ---
+                    // Verificăm dacă request-ul a avut succes (status 2xx)
+                    if (!response.ok) {
+                        return null; // Returnăm null dacă produsul nu există
+                    }
+                    return response.json();
+                });
+
+                // Așteptăm ca toate request-urile să se termine
                 const productDetails = await Promise.all(productPromises);
-                setProducts(productDetails);
+
+                // Filtrăm produsele care nu au fost găsite (cele care sunt null)
+                // înainte de a actualiza starea componentei.
+                setProducts(productDetails.filter(p => p !== null));
+                
             } catch (error) {
                 console.error("Eroare la preluarea detaliilor produselor:", error);
             } finally {
@@ -31,7 +44,7 @@ export default function WishlistPage() {
         };
 
         fetchProductDetails();
-    }, [wishlistItems]); // Re-rulează efectul când lista de item-uri se schimbă
+    }, [wishlistItems]);
 
     if (loading) return <p>Se încarcă wishlist-ul...</p>;
 
@@ -43,6 +56,7 @@ export default function WishlistPage() {
             ) : (
                 <div className="product-grid">
                     {products.map(product => (
+                        // Acum, 'product' este garantat a fi un obiect valid
                         <ProductCard key={product.id} product={product} />
                     ))}
                 </div>

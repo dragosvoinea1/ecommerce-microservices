@@ -12,6 +12,8 @@ COPY ./pytest.ini /code/pytest.ini
 # Copiază fișierul de configurare pentru supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+COPY ./reindex.py /code/reindex.py
+
 EXPOSE 8000
 
 # Pornește supervisor

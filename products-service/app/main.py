@@ -4,6 +4,7 @@ from typing import List
 import os
 import pika
 import json
+import httpx
 
 from . import models, db
 from .dependencies import get_current_admin_user
@@ -16,6 +17,9 @@ ROOT_PATH = os.environ.get("ROOT_PATH", "")
 app = FastAPI(title="Products Service", root_path=ROOT_PATH)
 
 RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
+
+WISHLIST_SERVICE_URL = os.environ.get("WISHLIST_SERVICE_URL")
+NOTIFICATIONS_SERVICE_URL = os.environ.get("NOTIFICATIONS_SERVICE_URL")
 
 
 def publish_product_event(action: str, product: dict):
@@ -170,7 +174,8 @@ def delete_product(product_id: int,
 
 
 @app.put("/{product_id}", response_model=models.Product)
-def update_product(product_id: int,
+async def update_product( # <--- Adaugă async aici
+                   product_id: int,
                    product_data: models.ProductUpdate,
                    db: Session = Depends(get_db),
                    admin_user: dict = Depends(get_current_admin_user)):
@@ -182,7 +187,9 @@ def update_product(product_id: int,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Produsul nu a fost găsit.")
 
-    # Actualizăm doar câmpurile care au fost trimise în cerere
+    # Salvăm valoarea veche a discountului pentru comparație
+    old_discount = product_to_update.discount_percentage
+
     update_data = product_data.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(product_to_update, key, value)
@@ -191,6 +198,28 @@ def update_product(product_id: int,
     db.commit()
     db.refresh(product_to_update)
 
+    # --- LOGICA NOUĂ PENTRU NOTIFICĂRI ---
+    new_discount = product_to_update.discount_percentage
+    if new_discount and new_discount > (old_discount or 0):
+        try:
+            async with httpx.AsyncClient() as client:
+                # 1. Aflăm cine are produsul în wishlist
+                wishlist_res = await client.get(f"{WISHLIST_SERVICE_URL}/wishlist/users-by-product/{product_id}")
+                if wishlist_res.status_code == 200:
+                    user_emails = wishlist_res.json()
+                    message = f"Reducere! Produsul '{product_to_update.name}' are acum un discount de {new_discount}%."
+
+                    # 2. Trimitem notificare fiecărui utilizator
+                    for email in user_emails:
+                        await client.post(
+                            f"{NOTIFICATIONS_SERVICE_URL}/send-notification/{email}",
+                            json={"message": message}
+                        )
+        except Exception as e:
+            print(f"Failed to send discount notifications: {e}")
+    # --- SFÂRȘIT LOGICĂ NOTIFICĂRI ---
+
+    # ... (restul funcției cu publish_product_event rămâne la fel)
     product_dict = {
         c.name: getattr(product_to_update, c.name)
         for c in product_to_update.__table__.columns
