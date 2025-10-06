@@ -29,13 +29,13 @@ def publish_product_event(action: str, product: dict):
         channel = connection.channel()
 
         # Declarăm o coadă durabilă cu un nume fix
-        channel.queue_declare(queue='product_events_queue', durable=True)
+        channel.exchange_declare(exchange='product_events_exchange', exchange_type='fanout')
 
         message = {"action": action, "product": product}
 
         channel.basic_publish(
-            exchange='',
-            routing_key='product_events_queue',  # Trimitem direct la coadă
+            exchange='product_events_exchange',
+            routing_key='',  
             body=json.dumps(message, default=str),
             properties=pika.BasicProperties(
                 delivery_mode=2,  # Facem mesajul persistent

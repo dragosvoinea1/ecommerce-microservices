@@ -6,23 +6,28 @@ from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import sessionmaker
 from .models import DBWishlistItem
 
-print(' [WISHLIST CONSUMER] Script started. Waiting for messages.')
-
-# Așteptăm ca baza de date să fie gata
+print(' [WISHLIST CONSUMER] Script started.')
 time.sleep(15) 
 
-# Conexiunea la Baza de Date
 DATABASE_URL = os.environ.get("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Conexiunea la RabbitMQ
 RABBITMQ_URL = os.environ.get("RABBITMQ_URL")
 connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
 channel = connection.channel()
 
-# Ne conectăm la aceeași coadă pe care o folosește și search-service
-channel.queue_declare(queue='product_events_queue', durable=True)
+# --- MODIFICĂRI AICI ---
+# 1. Declară exchange-ul
+channel.exchange_declare(exchange='product_events_exchange', exchange_type='fanout')
+
+# 2. Creează o coadă temporară și exclusivă
+result = channel.queue_declare(queue='', exclusive=True)
+queue_name = result.method.queue
+
+# 3. Leagă coada la exchange
+channel.queue_bind(exchange='product_events_exchange', queue=queue_name)
+
 
 def callback(ch, method, properties, body):
     """Procesează un mesaj primit de la coada de evenimente."""
@@ -32,15 +37,14 @@ def callback(ch, method, properties, body):
     action = data.get('action')
     product = data.get('product')
 
-    # Ne interesează doar evenimentele de ștergere
     if action == 'delete':
         product_id = product.get('id')
         if not product_id:
+            ch.basic_ack(delivery_tag=method.delivery_tag) # Confirmă mesajele pe care le ignoră
             return
 
         db = SessionLocal()
         try:
-            # Construim și executăm comanda de ștergere
             stmt = delete(DBWishlistItem).where(DBWishlistItem.product_id == product_id)
             result = db.execute(stmt)
             db.commit()
@@ -50,8 +54,13 @@ def callback(ch, method, properties, body):
             db.rollback()
         finally:
             db.close()
+    
+    # 4. Confirmă manual mesajul, indiferent dacă a fost procesat sau ignorat
+    ch.basic_ack(delivery_tag=method.delivery_tag)
 
-channel.basic_consume(queue='product_events_queue', on_message_callback=callback, auto_ack=True)
 
-print(' [WISHLIST CONSUMER] Waiting for product events...')
+# 5. Consumă din coada nouă, cu auto_ack=False
+channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=False)
+
+print(f' [WISHLIST CONSUMER] Waiting for product events on queue "{queue_name}"...')
 channel.start_consuming()
