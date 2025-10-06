@@ -39,8 +39,8 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
       - WISHLIST_SERVICE_URL=http://wishlist-service:8000
       - NOTIFICATIONS_SERVICE_URL=http://notifications-service:8000
-      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
-      - ALGORITHM=HS256
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
     depends_on:
       products_db:
         condition: service_healthy # <-- MODIFICARE AICI
@@ -75,8 +75,8 @@ services:
     environment:
       - ROOT_PATH=/users
       - DATABASE_URL=postgresql://user:password@user_db/user_db
-      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
-      - ALGORITHM=HS256
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
     depends_on:
       user_db:
         condition: service_healthy # <-- MODIFICARE AICI
@@ -110,8 +110,8 @@ services:
       - ROOT_PATH=/orders
       - DATABASE_URL=postgresql://user:password@orders_db/orders_db
       - PRODUCTS_SERVICE_URL=http://products-service:8000
-      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@# # <-- Adaugă asta
-      - ALGORITHM=HS256 # <-- Și asta
+      - SECRET_KEY=${SECRET_KEY} 
+      - ALGORITHM=${ALGORITHM} 
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
     depends_on:
@@ -148,8 +148,8 @@ services:
     environment:
       - ROOT_PATH=/reviews
       - DATABASE_URL=postgresql://user:password@reviews_db/reviews_db
-      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
-      - ALGORITHM=HS256
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
     depends_on:
       reviews_db:
         condition: service_healthy
@@ -227,8 +227,8 @@ services:
     build: ./wishlist-service
     environment:
       - DATABASE_URL=postgresql://user:password@wishlist_db/wishlist_db
-      - SECRET_KEY=o_cheie_foarte_secreta_si_lunga_123!@#
-      - ALGORITHM=HS256
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq 
     depends_on:
       wishlist_db:
@@ -243,8 +243,8 @@ services:
     volumes:
       - wishlist_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=wishlist_db
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U user -d wishlist_db" ]
